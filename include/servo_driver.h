@@ -33,6 +33,8 @@
 	#define SERVO_PWM_MIN  125
 	// Maximum output value for servo PWM
 	#define SERVO_PWM_MAX  625
+	// Default maximum current in mA
+	#define DEF_CURRENT_MA 50
 	// offset on the current reading
 	#define CURRENT_OFFSET 6
 	// offset on the angle measurement (degrees)
@@ -46,12 +48,14 @@
 	/**
 	 * Set some angle to the desired servo.
 	 * Angle must be between 0 and 180. Values outside such range will be
-	 * cropped
+	 * cropped.
+	 * Choosing an invalid servo number may result in erratic behaviour.
 	 */
-	void servo_setAngle(uint8_t servo_num, uint16_t angle);
+	void servo_setAngle(const uint8_t servo_num, uint16_t angle);
 	
 	/**
-	 * Set the servo current
+	 * Set the servo current in milliamperes.
+	 * Choosing an invalid servo number may result in erratic behaviour.
 	 */
-	void servo_setCurrent(uint8_t servo_num, uint8_t current);
+	void servo_setCurrent(const uint8_t servo_num, const uint8_t current_mA);
 #endif

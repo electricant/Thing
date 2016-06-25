@@ -37,7 +37,7 @@ int main( void )
 	ADC_ConvMode_and_Resolution_Config(&ADCA, ADC_ConvMode_Signed,
 			ADC_RESOLUTION_12BIT_gc);
 	ADC_Reference_Config(&ADCA, ADC_REFSEL_INT1V_gc);
-	ADC_Prescaler_Config(&ADCA, ADC_PRESCALER_DIV512_gc);
+	ADC_Prescaler_Config(&ADCA, ADC_PRESCALER_DIV256_gc); // TODO: f_samp = ?
 	ADC_Enable(&ADCA);
 
 	// Initialize specific drivers
@@ -55,18 +55,21 @@ int main( void )
 	/*
 	 * Actual main
 	 */
-	uint8_t angle = 5; // max 45 gradi
-	uint8_t current = 25;
+	uint8_t angle = 5;
+	uint8_t current = 16;
 	servo_setAngle(THUMB_FINGER, angle);
 	servo_setCurrent(THUMB_FINGER, current);
 	// test servo_driver
 	while (1) {
 		uint8_t angleCmd = esp_getCommand(false);
 		uint8_t currentCmd = esp_getCommand(false)>>8;
+
 		if (angleCmd < 37)
 			angleCmd = 37;
-		if (currentCmd < 57)
-			currentCmd = 57;
+
+		if (currentCmd < 42)
+			currentCmd = 42;
+
 		angle = angleCmd - 32;
 		current = currentCmd - 32;
 		servo_setAngle(THUMB_FINGER, angle);
