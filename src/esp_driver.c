@@ -42,6 +42,7 @@ ISR(USARTF0_RXC_vect)
 	switch (newLineCount)
 	{
 		case 0:
+			// fall through
 		case 1: // save character in buffer
 			recBuf[bufIndex] = in;
 			bufIndex = (bufIndex + 1) % RECEIVE_BUFFER_SIZE;
@@ -57,7 +58,7 @@ ISR(USARTF0_RXC_vect)
             	status |= ESP_STATUS_NEW_COMM;
             	command = (recBuf[9] << 8) | recBuf[10];
         	}
-        	PORTE.OUT = ~status;
+			PORTE.OUT = ~status;
 			bufIndex = 0; // New data will be put at the beginning
 			break;
 

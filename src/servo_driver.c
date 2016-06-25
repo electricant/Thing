@@ -11,11 +11,11 @@
 #include "include/servo_driver.h"
 #include "include/utils.h"
 
-uint16_t thumbComp = INIT_COMP;
-uint16_t indexComp = INIT_COMP;
-uint16_t midComp = INIT_COMP;
-uint16_t ringComp = INIT_COMP;
-uint16_t pinkyComp = INIT_COMP;
+uint16_t thumbComp = SERVO_PWM_MIN;
+uint16_t indexComp = SERVO_PWM_MIN;
+uint16_t midComp = SERVO_PWM_MIN;
+uint16_t ringComp = SERVO_PWM_MIN;
+uint16_t pinkyComp = SERVO_PWM_MIN;
 
 uint16_t thumbCurrent = 0;
 uint16_t indexCurrent = 0;
@@ -76,8 +76,8 @@ ISR(TCD0_CCA_vect)
 			thumbComp += 2;
 	}
 
-	thumbComp = max(thumbComp, 125);
-	thumbComp = min(thumbComp, 625);
+	thumbComp = max(thumbComp, SERVO_PWM_MIN);
+	thumbComp = min(thumbComp, SERVO_PWM_MAX);
 	thumbSetCompare(thumbComp);
 	
 	indexSetCompare(indexComp);
@@ -98,7 +98,7 @@ ISR(ADCA_CH0_vect)
 	thumbCurrent = max(0, tempC / 2); // remove sign
 
 	// select another servo
-	
+
 	// start another conversion
 	ADC_Ch_Conversion_Start(&ADCA.CH0);
 }
@@ -113,7 +113,7 @@ ISR(ADCA_CH1_vect)
 	tAngleAct = max(0, tempA / 2); // remove sign
 
 	// select another servo
-	
+
 	// start another conversion
 	ADC_Ch_Conversion_Start(&ADCA.CH1);
 }
@@ -122,26 +122,23 @@ void servo_setAngle(uint8_t servo_num, uint16_t angle)
 {
 	angle = max(angle, 1); // see how the control algorithm works
 	angle = min(angle, 180);
-	// maximum = 625, minimum = 125
-	uint16_t compVal = 125 + ((angle * 125) / 45);
 
 	switch (servo_num)
 	{
 		case THUMB_FINGER:
-			//thumbReq = compVal;
 			tAngleReq = angle;
 			break;
 		case INDEX_FINGER:
-			indexComp = compVal;
+			
 			break;
 		case MIDDLE_FINGER:
-			midComp = compVal;
+			
 			break;
 		case RING_FINGER:
-			ringComp = compVal;
+			
 			break;
 		case PINKY_FINGER:
-			pinkyComp = compVal;
+			
 			break;
 	}
 }

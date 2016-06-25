@@ -11,11 +11,11 @@
 	/**
 	 * Define where the various servos are connected and their function
 	 */
-	#define THUMB_FINGER  1
-	#define INDEX_FINGER  2
-	#define MIDDLE_FINGER 3
-	#define RING_FINGER   4
-	#define PINKY_FINGER  5
+	#define THUMB_FINGER  0
+	#define INDEX_FINGER  1
+	#define MIDDLE_FINGER 2
+	#define RING_FINGER   3
+	#define PINKY_FINGER  4
 
 	#define thumbSetCompare(_comp) TC_SetCompareA( &TCD0, _comp )
 	#define indexSetCompare(_comp) TC_SetCompareB( &TCD0, _comp )
@@ -29,8 +29,10 @@
 	// Those afferct the PWM frequency and resolution. See the XMEGA manual
 	#define COMPARE_MAX    4999 // sets the servo frequency to 50Hz
 	#define CLK_DIV        TC_CLKSEL_DIV4_gc
-	// The servo position will be initialized to this value
-	#define INIT_COMP      125
+	// Minimun output value for servo PWM
+	#define SERVO_PWM_MIN  125
+	// Maximum output value for servo PWM
+	#define SERVO_PWM_MAX  625
 	// offset on the current reading
 	#define CURRENT_OFFSET 6
 	// offset on the angle measurement (degrees)
