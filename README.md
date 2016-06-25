@@ -10,7 +10,7 @@ The microcontroller should be able to set both the current and the angle for
 each servo.
 
 What is more everything should be battery powered and commands can be sent via a
-WiFi link and through an USB port. A [ROS]() module will be provided for 
+WiFi link and through an USB port. A [ROS](http://www.ros.org/) module will be provided for 
 integration with existing or new robotics porjects.
 
 A programmer is included within the board for easy firmware upgrade.
