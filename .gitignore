@@ -17,3 +17,6 @@ eagle.epf
 
 # Eagle file locks
 *.lck
+
+# vim swap files
+*.swp
