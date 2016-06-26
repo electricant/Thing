@@ -122,19 +122,34 @@ ISR(TCD0_CCA_vect)
 					compVal = 0;
 				}
 				break;
-
-			default:
-				compVal = 0; // should never be reached
 		}
+		
 		if (compVal >= SERVO_PWM_MIN) // save only if valid
 			sData[i].controlPWM = compVal;
-	}
 
-	thumbSetCompare(sData[THUMB_FINGER].controlPWM);
-	indexSetCompare(sData[INDEX_FINGER].controlPWM);
-	middleSetCompare(sData[MIDDLE_FINGER].controlPWM);
-	ringSetCompare(sData[RING_FINGER].controlPWM);
-	pinkySetCompare(sData[PINKY_FINGER].controlPWM);
+		// set the capture-compare value to the correct servo
+		switch (i) {
+			case THUMB_FINGER:
+				thumbSetCompare(compVal);
+				break;
+
+			case INDEX_FINGER:
+				indexSetCompare(compVal);
+				break;
+
+			case MIDDLE_FINGER:
+				middleSetCompare(compVal);
+				break;
+
+			case RING_FINGER:
+				ringSetCompare(compVal);
+				break;
+
+			case PINKY_FINGER:
+				pinkySetCompare(compVal);
+				break;
+		}
+	}
 }
 
 ISR(ADCA_CH0_vect)
