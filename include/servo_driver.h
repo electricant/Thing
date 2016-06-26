@@ -22,7 +22,24 @@
 	#define middleSetCompare(_comp) TC_SetCompareC( &TCD0, _comp )
 	#define ringSetCompare(_comp) TC_SetCompareA( &TCE0, _comp )
 	#define pinkySetCompare(_comp) TC_SetCompareB( &TCE0, _comp )
-	
+	/**
+	 * Driver operating modes:
+	 *
+	 * ANGLE:  The servo tries to go to the desired angle with a given speed.
+	 *         If a current threshold is crossed the driving signal is
+	 *         momentarily disabled
+	 *
+	 * HOLD:   The servo tries to hold an object into the hand, applying the
+	 *         desired force. This means that a given angle is kept as long as
+	 *         the current stays below a threshold. If the threshold is crossed
+	 *         the hand is opened slightly.
+	 *
+	 * FOLLOW: The driver does nothing. It sends pulses to the servo trying to
+	 *         follow the position in which the operator is putting this hand's
+	 *         fingers.
+	 */
+	typedef enum { ANGLE, HOLD, FOLLOW } servo_state_t;
+
 	/**
 	 * Configuration directives
 	 */
@@ -46,16 +63,32 @@
 	void servo_init();
 
 	/**
+	 * Choose the operating mode for this dirver
+	 */
+	void servo_setMode(const servo_state_t mode);
+
+	/**
 	 * Set some angle to the desired servo.
 	 * Angle must be between 0 and 180. Values outside such range will be
 	 * cropped.
-	 * Choosing an invalid servo number may result in erratic behaviour.
+	 * 
+	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
 	 */
 	void servo_setAngle(const uint8_t servo_num, uint16_t angle);
 	
 	/**
 	 * Set the servo current in milliamperes.
-	 * Choosing an invalid servo number may result in erratic behaviour.
+	 * 
+	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
 	 */
 	void servo_setCurrent(const uint8_t servo_num, const uint8_t current_mA);
+	
+	/**
+	 * Set the speed at which te servo rotates when in ANGLE mode. This speed is
+	 * a value which will be summed to the current angle until the goal is
+	 * reached.
+	 *
+	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
+	 */
+	void servo_setSpeed(const uint8_t servo_num, const uint8_t speed);
 #endif

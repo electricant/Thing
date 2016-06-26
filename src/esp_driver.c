@@ -9,7 +9,7 @@
 #include "include/esp_driver.h"
 
 // Device status
-uint8_t status = 0;
+static uint8_t status = 0;
 // the last command received
 uint16_t command;
 // Received data buffer
