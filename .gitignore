@@ -20,3 +20,6 @@ eagle.epf
 
 # vim swap files
 *.swp
+
+# tests
+testwifi

@@ -20,5 +20,8 @@ firmware.hex: $(OBJECTS)
 flash: firmware.hex
 	avrdude -p x128a1 -c avrispmkII -P usb -U flash:w:firmware.hex:i
 
+testwifi: tests/testwifi.c
+	@gcc $< -iquote. -o testwifi -lbsd
+
 clean:
-	@rm -f *.o firmware*
+	@rm -f *.o firmware* testwifi
