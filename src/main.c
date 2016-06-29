@@ -53,27 +53,31 @@ int main( void )
 	sei();
 
 	/*
-	 * Actual main
+	 * main loop: listens for comands and executes them
 	 */
-	uint8_t angle = 5;
-	uint8_t current = 16;
-	servo_setAngle(THUMB_FINGER, angle);
-	servo_setCurrent(THUMB_FINGER, current);
-	// test servo_driver
 	while (1) {
-		uint8_t angleCmd = esp_getCommand(false);
-		uint8_t currentCmd = esp_getCommand(false)>>8;
-
-		if (angleCmd < 37)
-			angleCmd = 37;
-
-		if (currentCmd < 42)
-			currentCmd = 42;
-
-		angle = angleCmd - 32;
-		current = currentCmd - 32;
-		servo_setAngle(THUMB_FINGER, angle);
-		servo_setCurrent(THUMB_FINGER, current);
-		_delay_ms(40);
+		union wifiCommand cmd = esp_getCommand(true);
+		PORTE.OUT = ~cmd.field.command;
+		switch (cmd.field.command)
+		{
+			case WIFI_SET_MODE:
+				if (cmd.field.data == WIFI_MODE_FOLLOW)
+					servo_setMode(FOLLOW);
+				else if (cmd.field.data == WIFI_MODE_ANGLE)
+					servo_setMode(ANGLE);
+				else if (cmd.field.data == WIFI_MODE_HOLD)
+					servo_setMode(HOLD);
+				break;
+			case WIFI_SET_ANGLE:
+				servo_setAngle(cmd.field.servo, cmd.field.data);
+				break;
+			case WIFI_SET_CURRENT:
+				servo_setCurrent(cmd.field.servo, cmd.field.data);
+				break;
+			case WIFI_SET_SPEED:
+				servo_setSpeed(cmd.field.servo, cmd.field.data);
+				break;
+		}
+		_delay_ms(100);
 	}
 }

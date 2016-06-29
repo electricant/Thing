@@ -3,15 +3,19 @@
  * 
  * Copyright (C) 2015 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
  */
-#include "include/board.h"
-#include "include/usart_driver.h"
-
 #include "include/esp_driver.h"
 
-// Device status
-static uint8_t status = 0;
+// Device status, packetized 8 bits
+static union {
+	struct {
+		bool ready:1;
+		bool newCmd:1;
+	} flags;
+	uint8_t raw;
+} status;
+
 // the last command received
-uint16_t command;
+static union wifiCommand command;
 // Received data buffer
 char recBuf[RECEIVE_BUFFER_SIZE];
 uint8_t bufIndex = 0;
@@ -55,10 +59,10 @@ ISR(USARTF0_RXC_vect)
             	_delay_ms(1);
             	transmitStr(CONNECT_STR);
         	} else if (recBuf[1] == 'I') { // new command: '+IPD,0,length:data'
-            	status |= ESP_STATUS_NEW_COMM;
-            	command = (recBuf[9] << 8) | recBuf[10];
+            	status.flags.newCmd = true;
+            	command.raw = (recBuf[9] << 8) | recBuf[10];
         	}
-			PORTE.OUT = ~status;
+			//PORTE.OUT = ~status.raw;
 			bufIndex = 0; // New data will be put at the beginning
 			break;
 
@@ -90,13 +94,14 @@ void esp_init()
 	transmitStr("AT+CIPSTO=60\r\n"); // client activity timeout
 	_delay_ms(10);
 	transmitStr("AT+CIPSERVER=1\r\n"); // default port = 333
-	status |= ESP_STATUS_READY;
+	status.flags.ready = true;
 }
 
-uint16_t esp_getCommand(bool blocking)
+union wifiCommand esp_getCommand(bool blocking)
 {
-	while (blocking && (status ^ ESP_STATUS_NEW_COMM)) {;}
-	status &= (ESP_STATUS_READY);
+	//while (blocking && (!status.flags.newCmd)) {;}
+	status.flags.newCmd = false;
+	//PORTE.OUT = ~status.raw;
 	return command;
 }
 

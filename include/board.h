@@ -30,6 +30,16 @@
 		}field;
 		uint16_t raw;
 	};
+	union wifiCommand_le // Little-endian version
+	{
+		struct
+		{
+			uint8_t servo : 4;
+			uint8_t command : 4;
+			uint8_t data;
+		}field;
+		uint16_t raw;
+	};
 	#define WIFI_SET_MODE    0x01
 	#define WIFI_SET_ANGLE   0x02
 	#define WIFI_SET_CURRENT 0x03

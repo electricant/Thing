@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <time.h>
 
 #include "include/board.h" // use the same header as the firmware
 
@@ -116,7 +117,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	// Send commands one at a time
+	// We can open the connection now
 	int socket_desc = socket(AF_INET , SOCK_STREAM , 0);
 	if (socket_desc == -1) {
 		fprintf(stderr, "Could not create socket.\n");
@@ -133,12 +134,20 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Error connecting to target board\n");
 		exit(EXIT_FAILURE);
 	}
+	
+	// wait some time after succesful connection
+	struct timespec delay, rem;
+	delay.tv_sec = 0;
+	delay.tv_nsec = 20*1000*1000; // 15 ms
+	nanosleep(&delay, &rem);
 
-	union wifiCommand cmd;
+	union wifiCommand_le cmd;
+
 	if (mode != -1) { // change mode first
 		cmd.field.command = WIFI_SET_MODE;
 		cmd.field.data = mode;
 		send(socket_desc , &cmd, sizeof(cmd), 0);
+		nanosleep(&delay, &rem);
 	}
 
 	if (angle != -1) {
@@ -146,6 +155,7 @@ int main(int argc, char *argv[])
 		cmd.field.servo = servo_number;
 		cmd.field.data = angle;
 		send(socket_desc , &cmd, sizeof(cmd), 0);
+		nanosleep(&delay, &rem);
 	}
 
     if (current != -1) {
@@ -153,6 +163,7 @@ int main(int argc, char *argv[])
         cmd.field.servo = servo_number;
         cmd.field.data = current;
         send(socket_desc , &cmd, sizeof(cmd), 0);
+    	nanosleep(&delay, &rem);
     }
 
     if (speed != -1) {
@@ -160,7 +171,15 @@ int main(int argc, char *argv[])
         cmd.field.servo = servo_number;
         cmd.field.data = speed;
         send(socket_desc , &cmd, sizeof(cmd), 0);
+        nanosleep(&delay, &rem);
     }
 
+	// wait for the remote end to close the socket
+	int len = 1;
+	while (len > 0) {
+		char buffer;
+		len = read(socket_desc, &buffer, len);
+	}
+	printf("Connection closed\n");
 	return 0;
 }

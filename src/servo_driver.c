@@ -11,7 +11,7 @@
 #include "include/servo_driver.h"
 #include "include/utils.h"
 
-static servo_state_t status = HOLD;
+static servo_state_t status = FOLLOW; // start in a safe mode
 
 struct servo_data_t
 {
@@ -100,7 +100,7 @@ ISR(TCD0_CCA_vect)
 					compVal = 0; // too much current. STOP!
 				}
 				break;
-			
+
 			case HOLD:
 				// NOTE: I'm supposing the hand is closed when the servo goes
 				// to 180 degrees and opened otherwhise
@@ -123,7 +123,7 @@ ISR(TCD0_CCA_vect)
 				}
 				break;
 		}
-		
+
 		if (compVal >= SERVO_PWM_MIN) // save only if valid
 			sData[i].controlPWM = compVal;
 

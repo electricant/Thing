@@ -1,8 +1,11 @@
 #ifndef ESP_DRIVER_H
 #define ESP_DRIVER_H
 
-#include <stdbool.h>
-#include <stdint.h>
+	#include <stdbool.h>
+	#include <stdint.h>
+
+	#include "include/board.h"
+	#include "include/usart_driver.h"
 
 	/**
 	 * Size of the receive buffer in bytes
@@ -31,7 +34,7 @@
 	 * If blocking is set to false the routine does not block but my return an 
 	 * old command.
 	 */
-	uint16_t esp_getCommand(bool blocking);
+	union wifiCommand esp_getCommand(bool blocking);
 
 	/**
 	 * Send a C string through the wifi link.
