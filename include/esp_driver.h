@@ -6,20 +6,25 @@
 
 	#include "include/board.h"
 	#include "include/usart_driver.h"
+	#include "include/utils.h"
 
 	/**
-	 * Size of the receive buffer in bytes
+	 * Size of the command queue in number of commands. Old commands will be
+	 * overwritten.
 	 */
-	#define RECEIVE_BUFFER_SIZE 16
+	#define COMMAND_QUEUE_SIZE 4
+
 	/**
-	 * String to send upon connection. Keep this length constant!
+	 * The command parser is a state machine. This enum defines its states
 	 */
-	#define CONNECT_STR "RA Thing v0.0\n"
-	/**
-	 * Status masks
-	 */
-	#define ESP_STATUS_READY     (0x01)
-	#define ESP_STATUS_NEW_COMM  (0x01<<1)
+	typedef enum {
+		BEGIN,       // receive data and analyze its value
+		SKIP_TO_LENGTH, // receive data ignoring its value
+		COMPUTE_LEN, // compute the length of received data
+		SKIP_TO_DATA,
+		FETCH_HIGH,  // Fetch the high byte of the command
+		FETCH_LOW    // Fetch the low byte of the command
+	} esp_state_t;
 
 	/**
 	 * Initialize the hardware components needed for the WiFi module

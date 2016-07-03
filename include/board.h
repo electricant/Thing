@@ -34,9 +34,9 @@
 	{
 		struct
 		{
-			uint8_t servo : 4;
-			uint8_t command : 4;
 			uint8_t data;
+			uint8_t command : 4;
+			uint8_t servo : 4;
 		}field;
 		uint16_t raw;
 	};

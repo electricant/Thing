@@ -4,22 +4,19 @@
  * Copyright (C) 2015 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
  */
 #include "include/esp_driver.h"
+#include "include/serio_driver.h"
 
-// Device status, packetized 8 bits
-static union {
-	struct {
-		bool ready:1;
-		bool newCmd:1;
-	} flags;
-	uint8_t raw;
-} status;
+// Struct holding the command queue. Declared as volatile in order not to be
+// optimized out by the compiler
+struct CommandQueue {
+	union wifiCommand cmd[COMMAND_QUEUE_SIZE];
+	uint8_t next; // index of the next element in the array
+	uint8_t nQueued; // nomber of enqueued items
+};
+static volatile struct CommandQueue cmdQ;
 
-// the last command received
-static union wifiCommand command;
-// Received data buffer
-char recBuf[RECEIVE_BUFFER_SIZE];
-uint8_t bufIndex = 0;
-uint8_t newLineCount = 0;
+// parser status
+static esp_state_t pStatus = BEGIN;
 
 /**
  * Send a C string through the serial port
@@ -36,38 +33,53 @@ void transmitStr(char* data)
 
 ISR(USARTF0_RXC_vect)
 {
+	static uint8_t skipCount; // number of characters to be skipped
+	static uint8_t dataLen;   // length of the received packet
+
 	char in = USART_GetChar(&USARTF0);
 
-	if (in <= 13)
-		++newLineCount;
-	else
-		newLineCount = 0;
-
-	switch (newLineCount)
-	{
-		case 0:
-			// fall through
-		case 1: // save character in buffer
-			recBuf[bufIndex] = in;
-			bufIndex = (bufIndex + 1) % RECEIVE_BUFFER_SIZE;
+	switch (pStatus) {
+		case BEGIN:
+			if (in == '+') {
+				skipCount = 6;  // when data is received the ESP sends:
+				pStatus = SKIP_TO_LENGTH; // +IPD,0,n:<data>
+			}	                // so skip to the number of bits n
 			break;
 
-		case 2: // parse command
-			if (recBuf[2] == 'C') 
-			{ // new connection on channel 0: '0,CONNECT', send greetings
-            	transmitStr("AT+CIPSEND=0,14\r\n");
-            	_delay_ms(1);
-            	transmitStr(CONNECT_STR);
-        	} else if (recBuf[1] == 'I') { // new command: '+IPD,0,length:data'
-            	status.flags.newCmd = true;
-            	command.raw = (recBuf[9] << 8) | recBuf[10];
-        	}
-			//PORTE.OUT = ~status.raw;
-			bufIndex = 0; // New data will be put at the beginning
+		case SKIP_TO_LENGTH:
+			skipCount--;
+			if (skipCount == 0)
+				pStatus = COMPUTE_LEN;
 			break;
 
-		default:
-			;// ignore character
+		case COMPUTE_LEN: // see 'man ascii' for details about conversion
+			dataLen = min(in - 48, 8); // up to 8 bits at a time
+			pStatus = SKIP_TO_DATA;
+			break;
+
+		case SKIP_TO_DATA:
+			// just discard one char
+			pStatus = FETCH_HIGH;
+			break;
+
+		case FETCH_HIGH:
+			cmdQ.cmd[cmdQ.next].raw = in << 8; // set the high byte
+			pStatus = FETCH_LOW;
+			break;
+
+		case FETCH_LOW:
+			cmdQ.cmd[cmdQ.next].raw |= in; // set the low byte
+
+			cmdQ.next = (cmdQ.next + 1) % COMMAND_QUEUE_SIZE;
+			if (cmdQ.nQueued < COMMAND_QUEUE_SIZE)
+				cmdQ.nQueued++;
+
+			dataLen -= 2;
+			if (dataLen == 0)
+				pStatus = BEGIN;
+			else
+				pStatus = FETCH_HIGH;
+			break;
 	}
 }
 
@@ -85,6 +97,8 @@ void esp_init()
 
 	// initialize ESP8266
 	_delay_ms(1000); // wait device startup, just to be sure
+	transmitStr("ATE0\r\n");
+	_delay_ms(10);
 	transmitStr("AT+CWMODE=2\r\n");
 	_delay_ms(10);
 	transmitStr("AT+CWSAP=\"Thing\",\"\",5,0\r\n");
@@ -94,15 +108,23 @@ void esp_init()
 	transmitStr("AT+CIPSTO=60\r\n"); // client activity timeout
 	_delay_ms(10);
 	transmitStr("AT+CIPSERVER=1\r\n"); // default port = 333
-	status.flags.ready = true;
+
+	// initialize an empty command Queue
+	cmdQ.next = 0;
+	cmdQ.nQueued = 0;
 }
 
 union wifiCommand esp_getCommand(bool blocking)
 {
-	//while (blocking && (!status.flags.newCmd)) {;}
-	status.flags.newCmd = false;
-	//PORTE.OUT = ~status.raw;
-	return command;
+	// wait until there's at least one command stored in the queue
+	while ((blocking == true) && (cmdQ.nQueued == 0)) {;}
+
+	// dequeue the oldest element
+	uint8_t index = mod(cmdQ.next - cmdQ.nQueued, COMMAND_QUEUE_SIZE);
+	if (cmdQ.nQueued > 0)
+		cmdQ.nQueued--;
+
+	return cmdQ.cmd[index];
 }
 
 void esp_sendStr(char* string)

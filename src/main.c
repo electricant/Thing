@@ -44,7 +44,7 @@ int main( void )
 	servo_init();
 	serio_init();
 	esp_init();
-	
+
 	// Interrupts are used pretty much everywhere
 	PMIC_SetVectorLocationToApplication();
 	PMIC_EnableLowLevel();
@@ -52,12 +52,25 @@ int main( void )
 	PMIC_EnableHighLevel();
 	sei();
 
+	serio_putString("\r\nRA Thing v0.0 READY\r\n> "); // TODO make it a prompt
 	/*
 	 * main loop: listens for comands and executes them
 	 */
 	while (1) {
 		union wifiCommand cmd = esp_getCommand(true);
-		PORTE.OUT = ~cmd.field.command;
+
+		serio_putChar('C');
+		serio_putChar(cmd.field.command + 48);
+		serio_putChar(' ');
+
+		serio_putChar('S');
+		serio_putChar(cmd.field.servo + 48);
+		serio_putChar(' ');
+
+		serio_putChar('D');
+		serio_putChar(cmd.field.data);
+		serio_putString("\r\n");
+
 		switch (cmd.field.command)
 		{
 			case WIFI_SET_MODE:
@@ -78,6 +91,5 @@ int main( void )
 				servo_setSpeed(cmd.field.servo, cmd.field.data);
 				break;
 		}
-		_delay_ms(100);
 	}
 }
