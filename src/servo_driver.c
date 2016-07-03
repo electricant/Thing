@@ -11,7 +11,7 @@
 #include "include/servo_driver.h"
 #include "include/utils.h"
 
-static servo_state_t status = FOLLOW; // start in a safe mode
+static volatile servo_state_t status = FOLLOW; // start in a safe mode
 
 struct servo_data_t
 {
