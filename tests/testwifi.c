@@ -112,7 +112,8 @@ int main(int argc, char *argv[])
 	parseCmdLine(argc, argv, &mode, &servo_number, &angle, &speed, &current);
 
 	// check command line options
-	if ((mode == -1) && (servo_number == -1)) {
+	if (((angle != -1) || (speed != -1) || (current != -1))
+			&& (servo_number == -1)) {
 		fprintf(stderr, "Please provide a servo to move\n");
 		exit(EXIT_FAILURE);
 	}
