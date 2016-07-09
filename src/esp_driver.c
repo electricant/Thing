@@ -114,7 +114,7 @@ void esp_init()
 	cmdQ.nQueued = 0;
 }
 
-union wifiCommand esp_getCommand(bool blocking)
+union wifiCommand esp_getCommand(const bool blocking)
 {
 	// wait until there's at least one command stored in the queue
 	while ((blocking == true) && (cmdQ.nQueued == 0)) {;}
@@ -127,7 +127,7 @@ union wifiCommand esp_getCommand(bool blocking)
 	return cmdQ.cmd[index];
 }
 
-void esp_sendStr(char* string)
+void esp_sendCommand(const union wifiCommand cmd)
 {
-	transmitStr(string); // TODO
+	// TODO
 }

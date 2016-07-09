@@ -39,11 +39,11 @@
 	 * If blocking is set to false the routine does not block but my return an 
 	 * old command.
 	 */
-	union wifiCommand esp_getCommand(bool blocking);
+	union wifiCommand esp_getCommand(const bool blocking);
 
 	/**
-	 * Send a C string through the wifi link.
+	 * Send a command through the wifi link.
 	 * If the link is not ready it will fail silently.
 	 */
-	void esp_sendStr(char* string);
+	void esp_sendCommand(const union wifiCommand cmd);
 #endif

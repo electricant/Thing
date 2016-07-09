@@ -203,13 +203,13 @@ void servo_setMode(const servo_state_t mode)
 	status = mode;
 }
 
-void servo_setAngle(const uint8_t servo_num, uint16_t angle)
+void servo_setAngle(const uint8_t servo_num, const uint8_t angle)
 {
-	angle = max(angle, 1); // setting angle to 0 may screw the control
-	                       // algorithm
-	angle = min(angle, 180);
+	uint8_t a = max(angle, 1); // setting angle to 0 may screw the control
+	                           // algorithm
+	a = min(a, 180);
 
-	sData[servo_num].targetAngle_deg = angle;
+	sData[servo_num].targetAngle_deg = a;
 }
 
 void servo_setCurrent(const uint8_t servo_num, const uint8_t current_mA)
@@ -222,3 +222,24 @@ void servo_setSpeed(const uint8_t servo_num, const uint8_t speed)
 	sData[servo_num].speed = speed;
 }
 
+uint8_t servo_getAngle(const uint8_t servo_num)
+{
+	uint16_t actPWM = sData[servo_num].controlPWM / SPEED_DIVIDER;
+	actPWM -= SERVO_PWM_MIN;
+	return (actPWM * 9) / 25;
+}
+
+uint8_t servo_getCurrent(const uint8_t servo_num)
+{
+	return sData[servo_num].current_mA;
+}
+
+uint8_t servo_getSpeed(const uint8_t servo_num)
+{
+	uint8_t current = sData[servo_num].current_mA;
+
+	if ((current > 10) && (current < sData[servo_num].maxCurrent_mA))
+		return sData[servo_num].speed;
+	
+	return 0;
+}

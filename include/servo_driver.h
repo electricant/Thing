@@ -76,7 +76,7 @@
 	 *
 	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
 	 */
-	void servo_setAngle(const uint8_t servo_num, uint16_t angle);
+	void servo_setAngle(const uint8_t servo_num, const uint8_t angle);
 
 	/**
 	 * Set the servo current in milliamperes.
@@ -93,4 +93,25 @@
 	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
 	 */
 	void servo_setSpeed(const uint8_t servo_num, const uint8_t speed);
+
+	/**
+	 * Return the current angle for the chosen servomotor
+	 * 
+	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
+	 */
+	uint8_t servo_getAngle(const uint8_t servo_num);
+
+	/**
+	 * Return the current sunk by the chosen servomotor
+	 * 
+	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
+	 */
+	uint8_t servo_getCurrent(const uint8_t servo_num);
+
+	/**
+	 * Return the current speed for the chosen servomotor
+	 * 
+	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
+	 */
+	uint8_t servo_getSpeed(const uint8_t servo_num);
 #endif
