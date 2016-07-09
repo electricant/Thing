@@ -15,7 +15,8 @@ static volatile servo_state_t status = FOLLOW; // start in a safe mode
 
 struct servo_data_t
 {
-	uint16_t controlPWM; // Value to send to the CC module
+	uint16_t controlPWM; // Value to send to the CC module, multiplied by
+	                     // SPEED_DIVIDER to get fractional speed
 	uint8_t  current_mA; // current measured by the ADC
 	uint8_t  maxCurrent_mA; // maximum allowed current
 	uint8_t  angle_deg; // angle measured by the ADC
@@ -54,7 +55,7 @@ void servo_init()
 
 	// provide some safe default values
 	for (int i = 0; i < 5; i++) {
-		sData[i].controlPWM = SERVO_PWM_MIN;
+		sData[i].controlPWM = SERVO_PWM_MIN * SPEED_DIVIDER;
 		sData[i].targetAngle_deg = 0;
 		sData[i].maxCurrent_mA = DEF_CURRENT_MA;
 		sData[i].speed = 1;
@@ -79,7 +80,8 @@ ISR(TCD0_CCA_vect)
 	for (int i = 0; i < 5; i++)
 	{ // update the driving signal for each servo
 		uint16_t compVal = sData[i].controlPWM;
-		uint16_t targetComp = angle2comp(sData[i].targetAngle_deg);
+		uint16_t targetComp = angle2comp(sData[i].targetAngle_deg)
+			* SPEED_DIVIDER;
 		uint8_t speed = sData[i].speed;
 		uint8_t actualAngle = sData[i].angle_deg;
 		uint8_t actualCurrent = sData[i].current_mA;
@@ -109,7 +111,7 @@ ISR(TCD0_CCA_vect)
 					compVal = min(compVal, targetComp);
 				} else {
 					compVal -= 10;
-					compVal = max(compVal, SERVO_PWM_MIN);
+					compVal = max(compVal, SERVO_PWM_MIN * SPEED_DIVIDER);
 				}
 				break;
 
@@ -117,17 +119,18 @@ ISR(TCD0_CCA_vect)
 				if ((compVal == 0) && (actualCurrent < 5))
 				{ // compVal was zero so the current is negligible and the angle
 				  // reading correct
-					compVal = angle2comp(actualAngle);
+					compVal = angle2comp(actualAngle) * SPEED_DIVIDER;
 				} else {
 					compVal = 0;
 				}
 				break;
 		}
 
-		if (compVal >= SERVO_PWM_MIN) // save only if valid
+		if (compVal >= SERVO_PWM_MIN * SPEED_DIVIDER) // save only if valid
 			sData[i].controlPWM = compVal;
 
 		// set the capture-compare value to the correct servo
+		compVal = compVal / SPEED_DIVIDER;
 		switch (i) {
 			case THUMB_FINGER:
 				thumbSetCompare(compVal);

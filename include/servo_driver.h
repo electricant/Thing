@@ -50,6 +50,8 @@
 	#define SERVO_PWM_MIN  125
 	// Maximum output value for servo PWM
 	#define SERVO_PWM_MAX  625
+	// Divider for the speed, used to slow down servo motion
+	#define SPEED_DIVIDER  2
 	// Default maximum current in mA
 	#define DEF_CURRENT_MA 50
 	// offset on the current reading
