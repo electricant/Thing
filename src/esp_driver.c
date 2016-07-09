@@ -31,6 +31,20 @@ void transmitStr(char* data)
 	}
 }
 
+/**
+ * send a data buffer through the serial port
+ */
+void transmitBuf(void* data, uint8_t size)
+{
+	while (size > 0)
+	{
+		while(!USART_IsTXDataRegisterEmpty(&USARTF0)) {;}
+		USART_PutChar(&USARTF0, *((char*)data));
+		++data;
+		--size;
+	}
+}
+
 ISR(USARTF0_RXC_vect)
 {
 	static uint8_t skipCount; // number of characters to be skipped
@@ -129,5 +143,6 @@ union wifiCommand esp_getCommand(const bool blocking)
 
 void esp_sendCommand(const union wifiCommand cmd)
 {
-	// TODO
+	transmitStr("AT+CPISEND=0,2\r\n");
+	transmitBuf((void*)&cmd, 2);
 }
