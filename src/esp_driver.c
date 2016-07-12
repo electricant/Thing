@@ -107,11 +107,11 @@ void esp_init()
 	USART_Baudrate_Set(&USARTF0, 11, -7); // 115200 baud (see the XMEGA manual)
 	USART_Rx_Enable(&USARTF0);
 	USART_Tx_Enable(&USARTF0);
-	USART_RxdInterruptLevel_Set(&USARTF0, USART_RXCINTLVL_LO_gc);
+	USART_RxdInterruptLevel_Set(&USARTF0, USART_RXCINTLVL_MED_gc);
 
 	// initialize ESP8266
 	_delay_ms(1000); // wait device startup, just to be sure
-	transmitStr("ATE0\r\n");
+	//transmitStr("ATE0\r\n");
 	_delay_ms(10);
 	transmitStr("AT+CWMODE=2\r\n");
 	_delay_ms(10);
@@ -143,6 +143,8 @@ union wifiCommand esp_getCommand(const bool blocking)
 
 void esp_sendCommand(const union wifiCommand cmd)
 {
-	transmitStr("AT+CPISEND=0,2\r\n");
+	transmitStr("AT+CIPSEND=0,2\r\n");
+	_delay_ms(2);
 	transmitBuf((void*)&cmd, 2);
+	_delay_ms(8);
 }

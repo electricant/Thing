@@ -81,36 +81,33 @@ int main( void )
 				else if (cmd.field.data == WIFI_MODE_HOLD)
 					servo_setMode(HOLD);
 				break;
-			
+
 			case WIFI_SET_ANGLE:
 				servo_setAngle(cmd.field.servo, cmd.field.data);
 				break;
-			
+
 			case WIFI_SET_CURRENT:
 				servo_setCurrent(cmd.field.servo, cmd.field.data);
 				break;
-			
+
 			case WIFI_SET_SPEED:
 				servo_setSpeed(cmd.field.servo, cmd.field.data);
 				break;
-			
-			case WIFI_GET_ANGLE:
-				cmd.field.command = WIFI_RESPONSE;
+
+			case WIFI_GET_ANGLE: // command is the same, with payload
 				cmd.field.data = servo_getAngle(cmd.field.servo);
 				esp_sendCommand(cmd);
 				break;
 
 			case WIFI_GET_CURRENT:
-				cmd.field.command = WIFI_RESPONSE;
-                cmd.field.data = servo_getCurrent(cmd.field.servo);
-                esp_sendCommand(cmd);
-                break;
+				cmd.field.data = servo_getCurrent(cmd.field.servo);
+				esp_sendCommand(cmd);
+				break;
 
 			case WIFI_GET_SPEED:
-				cmd.field.command = WIFI_RESPONSE;
-                cmd.field.data = servo_getSpeed(cmd.field.servo);
-                esp_sendCommand(cmd);
-                break;
+				cmd.field.data = servo_getSpeed(cmd.field.servo);
+				esp_sendCommand(cmd);
+				break;
 		}
 	}
 }
