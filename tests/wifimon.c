@@ -79,8 +79,8 @@ int main(int argc, char *argv[])
 	delay.tv_nsec = 1000*1000*1000 / rate;
 
 	// loop
-	union wifiCommand_le cmd;
-	union wifiCommand answer;
+	union wifiCommand_le cmd; // Sending is little endian whereas receiving is
+	union wifiCommand answer; // not. This is rather strange...
 	cmd.field.servo = 0;
 	while (1)
 	{
