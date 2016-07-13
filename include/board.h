@@ -18,6 +18,13 @@
 	#define USE_INTERNAL_CLOCK
 
 	/**
+	 * Various hardware assignments
+	 */
+	#define ESP_USART          USARTF0
+	#define ESP_USART_DRE_vect USARTF0_DRE_vect
+	#define ESP_USART_RXC_vect USARTF0_RXC_vect
+
+	/**
 	 * Commands supported through the wifi link
 	 */
 	union wifiCommand

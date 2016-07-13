@@ -61,7 +61,7 @@ void serio_putChar(char c)
 	txBuf.data[txBuf.next] = c;
 	txBuf.next = (txBuf.next + 1) % BUFFER_SIZE;
 	txBuf.used++;
-	
+
 	// (re)enable interrupt in order to send data
 	USART_DreInterruptLevel_Set(&USARTC0, USART_DREINTLVL_LO_gc);
 }
