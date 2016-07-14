@@ -1,6 +1,6 @@
 /**
- * 
- * 
+ *
+ *
  * Copyright (C) 2015 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
  */
 
@@ -31,7 +31,7 @@ int main( void )
 	// Initialize LED output (xplained board)
 	PORTE.DIR = 0xff;
 	PORTE.OUT = 0xFF;
-	
+
 	// The ADC is needed for both the servo driver and the battery driver
 	ADC_CalibrationValues_Load(&ADCA);
 	ADC_ConvMode_and_Resolution_Config(&ADCA, ADC_ConvMode_Signed,
@@ -61,13 +61,11 @@ int main( void )
 
 		serio_putChar('C');
 		serio_putChar(cmd.field.command + 48);
-		serio_putChar(' ');
 
-		serio_putChar('S');
+		serio_putString(" S");
 		serio_putChar(cmd.field.servo + 48);
-		serio_putChar(' ');
 
-		serio_putChar('D');
+		serio_putString(" D");
 		serio_putChar(cmd.field.data);
 		serio_putString("\r\n");
 

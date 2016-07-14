@@ -12,7 +12,7 @@
 	 * Size of the command queue in number of commands. Old commands will be
 	 * overwritten.
 	 */
-	#define COMMAND_QUEUE_SIZE 4
+	#define COMMAND_QUEUE_SIZE 8
 
 	/**
 	 * The command parser is a state machine. This enum defines its states
@@ -33,10 +33,10 @@
 
 	/**
 	 * Get the last command issued.
-	 * 
+	 *
 	 * If blocking is set to true this routine will block and wait until a new
 	 * command is received.
-	 * If blocking is set to false the routine does not block but my return an 
+	 * If blocking is set to false the routine does not block but my return an
 	 * old command.
 	 */
 	union wifiCommand esp_getCommand(const bool blocking);
