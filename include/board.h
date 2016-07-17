@@ -24,6 +24,10 @@
 	#define ESP_USART_DRE_vect USARTD0_DRE_vect
 	#define ESP_USART_RXC_vect USARTD0_RXC_vect
 
+	#define SERIO_USART          USARTC0
+	#define SERIO_USART_DRE_vect USARTC0_DRE_vect
+	#define SERIO_USART_RXC_vect USARTC0_RXC_vect
+
 	#define BATTERY_VOLTAGE_PIN ADC_CH_MUXPOS_PIN0_gc
 	#define ADC_NEG_PIN         ADC_CH_MUXNEG_PIN4_gc
 	/**
@@ -35,11 +39,20 @@
 	#define RING_FINGER   3
 	#define PINKY_FINGER  4
 
-	#define thumbSetCompare(_comp) TC_SetCompareA( &TCD0, _comp )
-	#define indexSetCompare(_comp) TC_SetCompareB( &TCD0, _comp )
-	#define middleSetCompare(_comp) TC_SetCompareC( &TCD0, _comp )
-	#define ringSetCompare(_comp) TC_SetCompareA( &TCE0, _comp )
-	#define pinkySetCompare(_comp) TC_SetCompareB( &TCE0, _comp )
+	#define THUMB_TIMER   TCD0
+	#define thumbSetCompare(_comp)  TC_SetCompareA( &THUMB_TIMER, _comp )
+
+	#define INDEX_TIMER   TCC1
+	#define indexSetCompare(_comp)  TC_SetCompareB( &INDEX_TIMER, _comp )
+
+	#define MIDDLE_TIMER  TCC1
+	#define middleSetCompare(_comp) TC_SetCompareA( &MIDDLE_TIMER, _comp )
+
+	#define RING_TIMER    TCC0
+	#define ringSetCompare(_comp)   TC_SetCompareB( &RING_TIMER, _comp )
+
+	#define PINKY_TIMER   TCC0
+	#define pinkySetCompare(_comp)  TC_SetCompareA( &PINKY_TIMER, _comp )
 
 	#define THUMB_CURRENT_PIN  ADC_CH_MUXPOS_PIN9_gc
 	#define THUMB_ANGLE_PIN    ADC_CH_MUXPOS_PIN10_gc
