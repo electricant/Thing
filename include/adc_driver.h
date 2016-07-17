@@ -1,70 +1,28 @@
-/* This file has been prepared for Doxygen automatic documentation generation.*/
-/*! \file *********************************************************************
+/**
+ * This driver is responsible for controlling the ADC and providing the various
+ * readings to the other modules.
  *
- * \brief  XMEGA ADC driver header file.
+ * It is based on prrevious work by Atmel Corporation (http://www.atmel.com)
+ * and it has been adapted to suit this application
  *
- *      This file contains the function prototypes and enumerator definitions
- *      for various configuration parameters for the XMEGA ADC driver that is
- *      implemented in C.
- *
- *      The driver is not intended for size and/or speed critical code, since
- *      most functions are just a few lines of code, and the function call
- *      overhead would decrease code performance. The driver is intended for
- *      rapid prototyping and documentation purposes for getting started with
- *      the XMEGA ADC module.
- *
- *      For size and/or speed critical code, it is recommended to copy the
- *      function contents directly into your application instead of making
- *      a function call.
- *
- * \par Application note:
- *      AVR1300: Using the XMEGA ADC
- *
- * \par Documentation
- *      For comprehensive code documentation, supported compilers, compiler
- *      settings and supported devices see readme.html
- *
- * \author
- *      Atmel Corporation: http://www.atmel.com \n
- *      Support email: avr@atmel.com
- *
- * $Revision: 2564 $
- * $Date: 2009-07-06 17:45:56 +0200 (ma, 06 jul 2009) $  \n
- *
- * Copyright (c) 2008, Atmel Corporation All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- *
- * 3. The name of ATMEL may not be used to endorse or promote products derived
- * from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY AND
- * SPECIFICALLY DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
+ * Copyright (C) 2008 Atmel Corporation <avr@atmel.com>
+ * Copyright (C) 2015 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
+ */
 #ifndef ADC_DRIVER_H
 #define ADC_DRIVER_H
-
+#include "board.h"
 #include "avr_compiler.h"
 
+/* Defines */
 
+// settling time in clock cycles for the ADC
 #define COMMON_MODE_CYCLES 16
-
+// gain used to meaure currents
+#define CURRENT_GAIN ADC_CH_GAIN_4X_gc
+// gain used to measure angles
+#define ANGLE_GAIN ADC_CH_GAIN_1X_gc
+// gain used to measure the battery voltage
+#define BATTERY_GAIN ADC_CH_GAIN_1X_gc
 
 /* Macros */
 
@@ -209,7 +167,7 @@
  */
 #define ADC_Ch_InputMode_and_Gain_Config(_adc_ch, _inputMode, _gain)           \
 	(_adc_ch)->CTRL = ((_adc_ch)->CTRL &                                   \
-	                  (~(ADC_CH_INPUTMODE_gm|ADC_CH_GAINFAC_gm))) |        \
+	                  (~(ADC_CH_INPUTMODE_gm|ADC_CH_GAIN_gm))) |        \
 	                  ((uint8_t) _inputMode|_gain)
 
 /*!  \brief This macro configures the Positiv and negativ inputs.
@@ -327,36 +285,49 @@
 #define ADC_TempReference_Disable(_adc)                                        \
 	((_adc)->REFCTRL = (_adc)->REFCTRL & (~ADC_TEMPREF_bm))
 
+/* Data structures */
 
-/* Prototype for assembly macro. */
-uint8_t SP_ReadCalibrationByte( uint8_t index );
+struct ADC_Conversion_t {
+	uint8_t gain : 4;
+	uint8_t muxposPin;
+	int16_t result : 12;
+};
 
 /* Prototypes for functions. */
-void ADC_CalibrationValues_Load(ADC_t * adc);
+void ADC_init();
 
-uint16_t ADC_ResultCh_GetWord_Unsigned(ADC_CH_t * adc_ch, uint8_t offset);
-int16_t ADC_ResultCh_GetWord_Signed(ADC_CH_t * adc_ch, int8_t offset);
+uint8_t ADC_getServoCurrent(uint8_t servo_num);
 
-uint8_t ADC_Offset_Get_Unsigned(ADC_t * adc, ADC_CH_t *ch, bool oversampling);
-int8_t ADC_Offset_Get_Signed(ADC_t * adc, ADC_CH_t *ch, bool oversampling);
+uint8_t ADC_getServoAngle(uint8_t servo_num);
 
-uint16_t ADC_ResultCh_GetWord(ADC_CH_t * adc_ch);
-uint8_t ADC_ResultCh_GetLowByte(ADC_CH_t * adc_ch);
-uint8_t  ADC_ResultCh_GetHighByte(ADC_CH_t * adc_ch);
+uint8_t ADC_getBatteryVoltage();
 
-void ADC_Wait_8MHz(ADC_t * adc);
-void ADC_Wait_32MHz(ADC_t * adc);
+/*! \brief This function get the calibration data from the production calibration.
+ *
+ *  The calibration data is loaded from flash and stored in the calibration
+ *  register. The calibration data reduces the non-linearity error in the adc.
+ *
+ *  \param  adc          Pointer to ADC module register section.
+ */
+void ADC_loadCalibrationValues(ADC_t * adc);
 
-/* Deprecated functions: Compatibility with previous application note version */
-#ifdef ADC_DRIVER_USE_DEPRECATED_FUNCTIONS
-#define ADC_Referance_Config(_adc, _convRef) ADC_Reference_Config(_adc, _convRef)
-#define ADC_CalibrationValues_Set(_adc) ADC_CalibrationValues_Load(_adc)
-#endif
-
-#endif
-
-
-#define ADC_DRIVER_CH_GAIN_NONE ADC_CH_GAIN_1X_gc
+/*! \brief This function waits until the adc common mode is settled.
+ *
+ *  After the ADC clock has been turned on, the common mode voltage in the ADC
+ *  need some time to settle. The time it takes equals one dummy conversion.
+ *  Instead of doing a dummy conversion this function waits until the common
+ *  mode is settled.
+ *
+ *  \note The function sets the prescaler to the minimum value possible when the
+ *        clock speed is larger than 8 MHz to minimize the time it takes the
+ *        common mode to settle.
+ *
+ *  \note The ADC clock is turned off every time the ADC is disabled or the
+ *        device goes into sleep (not Idle sleep mode).
+ *
+ *  \param  adc Pointer to ADC module register section.
+ */
+void ADC_waitSettle(ADC_t * adc);
 
 /* Offset addresses for production signature row on GCC */
 #ifndef ADCACAL0_offset
@@ -366,4 +337,5 @@ void ADC_Wait_32MHz(ADC_t * adc);
 #define ADCBCAL0_offset 0x24
 #define ADCBCAL1_offset 0x25
 
+#endif
 #endif

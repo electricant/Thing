@@ -7,6 +7,7 @@
 // Standard library
 
 // Local drivers
+#include "include/adc_driver.h"
 #include "include/board.h"
 #include "include/avr_compiler.h"
 #include "include/pmic_driver.h"
@@ -28,19 +29,7 @@ int main( void )
 	 * driver.
 	 */
 	//TODO: clock_init();
-	// Initialize LED output (xplained board)
-	PORTE.DIR = 0xff;
-	PORTE.OUT = 0xFF;
-
-	// The ADC is needed for both the servo driver and the battery driver
-	ADC_CalibrationValues_Load(&ADCA);
-	ADC_ConvMode_and_Resolution_Config(&ADCA, ADC_ConvMode_Signed,
-			ADC_RESOLUTION_12BIT_gc);
-	ADC_Reference_Config(&ADCA, ADC_REFSEL_INT1V_gc);
-	ADC_Prescaler_Config(&ADCA, ADC_PRESCALER_DIV256_gc); // TODO: f_samp = ?
-	ADC_Enable(&ADCA);
-
-	// Initialize specific drivers
+	ADC_init();
 	servo_init();
 	serio_init();
 	esp_init();
@@ -56,6 +45,25 @@ int main( void )
 	/*
 	 * main loop: listens for comands and executes them
 	 */
+	 PORTD.DIRSET = PIN4_bm | PIN5_bm | PIN6_bm;
+	 PORTD.OUT = 0x00;
+	 while (1) {
+			uint8_t volt = ADC_getBatteryVoltage();
+			if (volt >= 220) { // HIGH
+				PORTD.OUT = 0x70; // all LEDs on
+			} else if (volt >= 190) { // MED
+				PORTD.OUT = 0x30;
+			} else if (volt >= 161) { // LOW
+				PORTD.OUT = 0x10;
+			} else {
+				// STOP
+			}
+
+			if (PORTC.IN & 0x40) { // charging
+				PORTD.OUT = 0x00;
+			}
+	 }
+
 	while (1) {
 		union wifiCommand cmd = esp_getCommand(true);
 
@@ -93,12 +101,12 @@ int main( void )
 				break;
 
 			case WIFI_GET_ANGLE: // command is the same, with payload
-				cmd.field.data = servo_getAngle(cmd.field.servo);
+				cmd.field.data = ADC_getServoAngle(cmd.field.servo);
 				esp_sendCommand(cmd);
 				break;
 
 			case WIFI_GET_CURRENT:
-				cmd.field.data = servo_getCurrent(cmd.field.servo);
+				cmd.field.data = ADC_getServoCurrent(cmd.field.servo);
 				esp_sendCommand(cmd);
 				break;
 

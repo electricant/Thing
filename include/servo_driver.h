@@ -1,6 +1,6 @@
 /**
- * 
- * 
+ *
+ *
  * Copyright (C) 2015 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
  */
 #ifndef SERVO_DRIVER_H
@@ -8,20 +8,6 @@
 
 	#include <stdint.h>
 
-	/**
-	 * Define where the various servos are connected and their function
-	 */
-	#define THUMB_FINGER  0
-	#define INDEX_FINGER  1
-	#define MIDDLE_FINGER 2
-	#define RING_FINGER   3
-	#define PINKY_FINGER  4
-
-	#define thumbSetCompare(_comp) TC_SetCompareA( &TCD0, _comp )
-	#define indexSetCompare(_comp) TC_SetCompareB( &TCD0, _comp )
-	#define middleSetCompare(_comp) TC_SetCompareC( &TCD0, _comp )
-	#define ringSetCompare(_comp) TC_SetCompareA( &TCE0, _comp )
-	#define pinkySetCompare(_comp) TC_SetCompareB( &TCE0, _comp )
 	/**
 	 * Driver operating modes:
 	 *
@@ -54,7 +40,8 @@
 	#define SPEED_DIVIDER  2
 	// Default maximum current in mA
 	#define DEF_CURRENT_MA 50
-	// offset on the current reading
+
+	// offset on the current measurement (mA)
 	#define CURRENT_OFFSET 6
 	// offset on the angle measurement (degrees)
 	#define ANGLE_OFFSET   32
@@ -95,22 +82,8 @@
 	void servo_setSpeed(const uint8_t servo_num, const uint8_t speed);
 
 	/**
-	 * Return the current angle for the chosen servomotor
-	 * 
-	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
-	 */
-	uint8_t servo_getAngle(const uint8_t servo_num);
-
-	/**
-	 * Return the current sunk by the chosen servomotor
-	 * 
-	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
-	 */
-	uint8_t servo_getCurrent(const uint8_t servo_num);
-
-	/**
 	 * Return the current speed for the chosen servomotor
-	 * 
+	 *
 	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
 	 */
 	uint8_t servo_getSpeed(const uint8_t servo_num);

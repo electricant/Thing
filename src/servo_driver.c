@@ -1,6 +1,6 @@
 /**
- * 
- * 
+ *
+ *
  * Copyright (C) 2015 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
  */
 #include "include/board.h"
@@ -34,24 +34,6 @@ void servo_init()
 	TC0_ConfigWGM(&TCD0, TC_WGMODE_DS_T_gc);
 	TC0_EnableCCChannels(&TCD0, TC0_CCAEN_bm);
 	TC0_SetCCAIntLevel(&TCD0, TC_CCAINTLVL_MED_gc);
-
-	// Setup the ADC channel 0 to read currents
-	ADC_Ch_InputMode_and_Gain_Config(&ADCA.CH0, ADC_CH_INPUTMODE_DIFFWGAIN_gc,
-			ADC_CH_GAIN_4X_gc);
-	ADC_Ch_InputMux_Config(&ADCA.CH0, ADC_CH_MUXPOS_PIN0_gc,
-			ADC_CH_MUXNEG_PIN4_gc);
-	ADC_Ch_Interrupts_Config(&ADCA.CH0, ADC_CH_INTMODE_COMPLETE_gc,
-			ADC_CH_INTLVL_MED_gc);
-	ADC_Ch_Conversion_Start(&ADCA.CH0);
-
-	// Setup ADC channel 1 to read angles
-	ADC_Ch_InputMode_and_Gain_Config(&ADCA.CH1, ADC_CH_INPUTMODE_DIFFWGAIN_gc,
-			            ADC_CH_GAIN_1X_gc); // divide by two
-	ADC_Ch_InputMux_Config(&ADCA.CH1, ADC_CH_MUXPOS_PIN1_gc,
-	    		        ADC_CH_MUXNEG_PIN4_gc);
-	ADC_Ch_Interrupts_Config(&ADCA.CH1, ADC_CH_INTMODE_COMPLETE_gc,
-			            ADC_CH_INTLVL_MED_gc);
-	ADC_Ch_Conversion_Start(&ADCA.CH1);
 
 	// provide some safe default values
 	for (int i = 0; i < 5; i++) {
@@ -154,7 +136,7 @@ ISR(TCD0_CCA_vect)
 		}
 	}
 }
-
+/*
 ISR(ADCA_CH0_vect)
 {
 	static int8_t servo_num = 0;
@@ -197,7 +179,7 @@ ISR(ADCA_CH1_vect)
 	// start another conversion
 	ADC_Ch_Conversion_Start(&ADCA.CH1);
 }
-
+*/
 void servo_setMode(const servo_state_t mode)
 {
 	status = mode;
@@ -240,6 +222,6 @@ uint8_t servo_getSpeed(const uint8_t servo_num)
 
 	if ((current > 10) && (current < sData[servo_num].maxCurrent_mA))
 		return sData[servo_num].speed;
-	
+
 	return 0;
 }

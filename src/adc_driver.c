@@ -1,80 +1,107 @@
-/* This file has been prepared for Doxygen automatic documentation generation.*/
-/*! \file *********************************************************************
+/**
+ * This driver is responsible for controlling the ADC and providing the various
+ * readings to the other modules.
  *
- * \brief
- *      XMEGA ADC driver source file.
+ * It is based on prrevious work by Atmel Corporation (http://www.atmel.com)
+ * and it has been adapted to suit this application
  *
- *      This file contains the function implementations the XMEGA ADC driver.
- *
- *      The driver is not intended for size and/or speed critical code, since
- *      most functions are just a few lines of code, and the function call
- *      overhead would decrease code performance. The driver is intended for
- *      rapid prototyping and documentation purposes for getting started with
- *      the XMEGA ADC module.
- *
- *      For size and/or speed critical code, it is recommended to copy the
- *      function contents directly into your application instead of making
- *      a function call.
- *
- *      Several functions use the following construct:
- *          "some_register = ... | (some_parameter ? SOME_BIT_bm : 0) | ..."
- *      Although the use of the ternary operator ( if ? then : else ) is discouraged,
- *      in some occasions the operator makes it possible to write pretty clean and
- *      neat code. In this driver, the construct is used to set or not set a
- *      configuration bit based on a boolean input parameter, such as
- *      the "some_parameter" in the example above.
- *
- * \par Application note:
- *      AVR1300: Using the XMEGA ADC
- *
- * \par Documentation
- *      For comprehensive code documentation, supported compilers, compiler
- *      settings and supported devices see readme.html
- *
- * \author
- *      Atmel Corporation: http://www.atmel.com \n
- *      Support email: avr@atmel.com
- *
- * $Revision: 2564 $
- * $Date: 2009-07-06 17:45:56 +0200 (ma, 06 jul 2009) $  \n
- *
- * Copyright (c) 2008, Atmel Corporation All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- *
- * 3. The name of ATMEL may not be used to endorse or promote products derived
- * from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY AND
- * SPECIFICALLY DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-#include "include/adc_driver.h"
-
-
-/*! \brief This function get the calibration data from the production calibration.
- *
- *  The calibration data is loaded from flash and stored in the calibration
- *  register. The calibration data reduces the non-linearity error in the adc.
- *
- *  \param  adc          Pointer to ADC module register section.
+ * Copyright (C) 2008 Atmel Corporation <avr@atmel.com>
+ * Copyright (C) 2015 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
  */
-void ADC_CalibrationValues_Load(ADC_t * adc)
+#include "include/adc_driver.h"
+#include "include/utils.h"
+/*
+ * The ADC is continuously running. The various channels are scanned one at a
+ * time. This data structure keeps track of the conversion.
+ *
+ * 11 different conversions are needed because we have to mesaure angle and
+ * current of 5 servos plus the battery voltage
+ */
+static volatile struct ADC_Conversion_t conv[11];
+static volatile uint8_t convIndex = 0;
+
+void ADC_init()
+{
+	ADC_loadCalibrationValues(&ADCA);
+	ADC_ConvMode_and_Resolution_Config(&ADCA, ADC_ConvMode_Signed,
+			ADC_RESOLUTION_12BIT_gc);
+	ADC_Reference_Config(&ADCA, ADC_REFSEL_INT1V_gc);
+	ADC_Prescaler_Config(&ADCA, ADC_PRESCALER_DIV256_gc); // TODO: f_samp = ?
+
+	ADC_Ch_Interrupts_Config(&ADCA.CH0, ADC_CH_INTMODE_COMPLETE_gc,
+			ADC_CH_INTLVL_MED_gc);
+
+	ADC_Enable(&ADCA);
+
+	// initialize the conversion struct
+	for(int i = 0; i < 5; i++) {
+		// first current
+		conv[i].gain = CURRENT_GAIN;
+		// then angle interleaved
+		conv[i+1].gain = ANGLE_GAIN;
+	}
+	conv[THUMB_FINGER].muxposPin = THUMB_CURRENT_PIN;
+	conv[THUMB_FINGER + 1].muxposPin = THUMB_ANGLE_PIN;
+
+	conv[INDEX_FINGER * 2].muxposPin = INDEX_CURRENT_PIN;
+	conv[(INDEX_FINGER * 2) + 1].muxposPin = INDEX_ANGLE_PIN;
+
+	conv[MIDDLE_FINGER * 2].muxposPin = MIDDLE_CURRENT_PIN;
+	conv[(MIDDLE_FINGER * 2) + 1].muxposPin = MIDDLE_ANGLE_PIN;
+
+	conv[RING_FINGER * 2].muxposPin = RING_CURRENT_PIN;
+	conv[(RING_FINGER * 2) + 1].muxposPin = RING_ANGLE_PIN;
+
+	conv[PINKY_FINGER * 2].muxposPin = PINKY_CURRENT_PIN;
+	conv[(PINKY_FINGER * 2) + 1].muxposPin = PINKY_ANGLE_PIN;
+
+	// battery voltage
+	conv[10].gain = BATTERY_GAIN;
+	conv[10].muxposPin = ADC_CH_MUXPOS_PIN2_gc;
+
+	// start with the first channel
+	ADC_Ch_InputMode_and_Gain_Config(&ADCA.CH0, ADC_CH_INPUTMODE_DIFFWGAIN_gc,
+			CURRENT_GAIN);
+	ADC_Ch_InputMux_Config(&ADCA.CH0, THUMB_CURRENT_PIN, ADC_NEG_PIN);
+	ADC_Ch_Conversion_Start(&ADCA.CH0);
+}
+
+ISR(ADCA_CH0_vect)
+{
+	// I'm not interested in the sign of the data
+	uint16_t curRes = max(0, ADCA.CH0.RES);
+	// Smooth the readings a bit
+	curRes += conv[convIndex].result;
+	conv[convIndex].result = curRes / 2;
+
+	// prepare the ADC fo the next reading
+	convIndex = (convIndex + 1) % 11;
+
+	ADC_Ch_InputMode_and_Gain_Config(&ADCA.CH0, ADC_CH_INPUTMODE_DIFFWGAIN_gc,
+			conv[convIndex].gain);
+	ADC_Ch_InputMux_Config(&ADCA.CH0, conv[convIndex].muxposPin, ADC_NEG_PIN);
+	ADC_Ch_Conversion_Start(&ADCA.CH0);
+}
+
+inline uint8_t ADC_getServoCurrent(uint8_t servo_num)
+{
+	return 0;
+}
+
+inline uint8_t ADC_getServoAngle(uint8_t servo_num)
+{
+	return 0;
+}
+
+inline uint8_t ADC_getBatteryVoltage()
+{
+	return (conv[10].result >> 3); // the sign has no meaning
+}
+
+/* Prototype for assembly macro. */
+uint8_t SP_ReadCalibrationByte( uint8_t index );
+
+void ADC_loadCalibrationValues(ADC_t * adc)
 {
 	if (&ADCA == adc) {
 		/* Get ADCACAL0 from production signature . */
@@ -87,157 +114,7 @@ void ADC_CalibrationValues_Load(ADC_t * adc)
 	}
 }
 
-
-/*! \brief This function clears the interrupt flag and returns the unsigned coversion result.
- *
- *	This function should be used together with the ADC_Ch_Conversion_Complete.
- *      When the conversion result is ready this funciton reads out the result.
- *
- *  \param  adc_ch  Pointer to ADC channel register section.
- *  \param  offset  Unsigned offset value to subtract.
- *  \return  The unsigned Conversion result with the offset substracted.
- */
-uint16_t ADC_ResultCh_GetWord_Unsigned(ADC_CH_t * adc_ch, uint8_t offset)
-{
-	uint16_t answer;
-
-	/* Clear interrupt flag.*/
-	adc_ch->INTFLAGS = ADC_CH_CHIF_bm;
-
-	/* Return result register contents*/
-	answer = adc_ch->RES - offset;
-
-	return answer;
-}
-
-
-/*! \brief This function clears the interrupt flag and returns the signed coversion result.
- *
- *	This function should be used together with the ADC_Ch_Conversion_Complete.
- *      When the conversion result is ready this funciton reads out the result.
- *
- *  \param  adc_ch  Pointer to ADC channel register section.
- *  \param  offset  Offset value to subtract.
- *  \return  The signed Conversion result with the offset substracted.
- */
-int16_t ADC_ResultCh_GetWord_Signed(ADC_CH_t * adc_ch, int8_t signedOffset)
-{
-	int16_t answer;
-
-	/* Clear interrupt flag.*/
-	adc_ch->INTFLAGS = ADC_CH_CHIF_bm;
-
-	/* Return result register contents*/
-	answer = adc_ch->RES - signedOffset;
-
-	return answer;
-}
-
-/*! \brief This function clears the interrupt flag and returns the coversion result without compensating for offset.
- *
- *	This function should be used together with the ADC_Ch_Conversion_Complete.
- *      When the conversion result is ready this funciton reads out the result.
- *
- *  \param  adc_ch  Pointer to ADC channel register section.
- *  \return  Signed conversion result.
- */
-uint16_t ADC_ResultCh_GetWord(ADC_CH_t * adc_ch)
-{
-	/* Clear interrupt flag.*/
-	adc_ch->INTFLAGS = ADC_CH_CHIF_bm;
-
-	/* Return result register contents*/
-	return adc_ch->RES;;
-}
-
-
-/*! \brief This function clears the interrupt flag and returns the low byte of the coversion result.
- *
- *	This funtion should be used together with the ADC_Ch_Conversion_Complete.
- *      When the conversion result is ready this funciton reads out the result.
- *
- *  \note  If this function is used with 12-bit right adjusted results, it
- *         returns the 8 LSB only. Offset is not compensated.
- *
- *  \param  adc_ch  Pointer to ADC channel register section.
- *
- *  \return  Low byte of conversion result.
- */
-uint8_t ADC_ResultCh_GetLowByte(ADC_CH_t * adc_ch)
-{
-	/* Clear interrupt flag.*/
-	adc_ch->INTFLAGS = ADC_CH_CHIF_bm;
-	/* Return result register contents*/
-	return adc_ch->RESL;
-}
-
-/*! \brief This function clears the interrupt flag and returns the high byte of the coversion result.
- *
- *	This funtion should be used together with the ADC_ResultCh_ConversionComplete.
- *      When the conversion result is ready this function reads out the result.
- *
- *  \note  If this function is used with 12-bit right adjusted results, it
- *         returns the 8 LSB only. Offset is not compensated.
- *
- *  \param  adc_ch  Pointer to ADC channel register section.
- *
- *  \return  High byte of conversion result.
- */
-uint8_t ADC_ResultCh_GetHighByte(ADC_CH_t * adc_ch)
-{
-	/* Clear interrupt flag.*/
-	adc_ch->INTFLAGS = ADC_CH_CHIF_bm;
-
-	/* Return low byte result register contents.*/
-	return adc_ch->RESH;
-}
-
-/*! \brief This function waits until the adc common mode is settled.
- *
- *  After the ADC clock has been turned on, the common mode voltage in the ADC
- *  need some time to settle. The time it takes equals one dummy conversion.
- *  Instead of doing a dummy conversion this function waits until the common
- *  mode is settled.
- *
- *  \note The function sets the prescaler to the minimum value to minimize the
- *        time it takes the common mode to settle. If the clock speed is higher
- *        than 8 MHz use the ADC_wait_32MHz function.
- *
- *  \param  adc Pointer to ADC module register section.
- */
-void ADC_Wait_8MHz(ADC_t * adc)
-{
-	/* Store old prescaler value. */
-	uint8_t prescaler_val = adc->PRESCALER;
-
-	/* Set prescaler value to minimum value. */
-	adc->PRESCALER = ADC_PRESCALER_DIV4_gc;
-
-	/* Wait 4*COMMON_MODE_CYCLES for common mode to settle. */
-	delay_us(4*COMMON_MODE_CYCLES);
-
-	/* Set prescaler to old value*/
-	adc->PRESCALER = prescaler_val;
-}
-
-
-/*! \brief This function waits until the adc common mode is settled.
- *
- *  After the ADC clock has been turned on, the common mode voltage in the ADC
- *  need some time to settle. The time it takes equals one dummy conversion.
- *  Instead of doing a dummy conversion this function waits until the common
- *  mode is settled.
- *
- *  \note The function sets the prescaler to the minimum value possible when the
- *        clock speed is larger than 8 MHz to minimize the time it takes the
- *        common mode to settle.
- *
- *  \note The ADC clock is turned off every time the ADC i disabled or the
- *        device goes into sleep (not Idle sleep mode).
- *
- *  \param  adc Pointer to ADC module register section.
- */
-void ADC_Wait_32MHz(ADC_t * adc)
+void ADC_waitSettle(ADC_t * adc)
 {
 	/* Store old prescaler value. */
 	uint8_t prescaler_val = adc->PRESCALER;
@@ -251,93 +128,6 @@ void ADC_Wait_32MHz(ADC_t * adc)
 	/* Set prescaler to old value*/
 	adc->PRESCALER = prescaler_val;
 }
-
-/*! \brief This function get the offset of the ADC when it is configured in unsigned mode
- *
- *   This function does one or several measurements to determine the offset of
- *   the ADC.
- *
- *  \note The ADC must be configured and enabled before this function is run.
- *
- *  \note This function only return the low byte of the 12-bit convertion,
- *        because the offset should never be more than +-8 LSB off.
- *
- *  \param adc Pointer to the ADC to calculate offset from.
- *  \param ch Pointer to the ADC channel to measure on.
- *  \param oversampling false for one measurement. true for averaging several measurements.
- *
- *  \return Offset on the selected ADC
- */
-uint8_t ADC_Offset_Get_Unsigned(ADC_t * adc, ADC_CH_t *ch, bool oversampling)
-{
-	if (oversampling) {
-		uint16_t offset=0;
-		for (int i=0; i<4; i++) {
-			/* Do one conversion to find offset. */
-			ADC_Ch_Conversion_Start(ch);
-
-			do{
-			} while (!ADC_Ch_Conversion_Complete(ch));
-			offset += ADC_ResultCh_GetWord_Unsigned(ch, 0x00);
-		}
-		return ((uint8_t)(offset>>2));
-	} else {
-		uint8_t offset=0;
-
-		/* Do one conversion to find offset. */
-		ADC_Ch_Conversion_Start(ch);
-
-		do{
-		} while (!ADC_Ch_Conversion_Complete(ch));
-		offset = (uint8_t)ADC_ResultCh_GetWord(ch);
-
-		return offset;
-	}
-}
-
-/*! \brief This function get the offset of the ADC when it is configured in signed mode
- *
- *   This function does one or several measurements to determine the offset of
- *   the ADC.
- *
- *  \note The ADC must be configured and enabled before this function is run.
- *
- *  \note This function only return the low byte of the 12-bit convertion,
- *        because the offset should never be more than +-8 LSB off.
- *
- *  \param adc Pointer to the ADC to calculate offset from.
- *  \param ch Pointer to the ADC channel to measure on.
- *  \param oversampling false for one measurement. true for averaging several measurements.
- *
- *  \return Offset on the selected ADC
- */
-int8_t ADC_Offset_Get_Signed(ADC_t * adc, ADC_CH_t *ch, bool oversampling)
-{
-	if (oversampling) {
-		int16_t offset=0;
-		for (int i=0; i<4; i++) {
-			/* Do one conversion to find offset. */
-			ADC_Ch_Conversion_Start(ch);
-
-			do{
-			} while (!ADC_Ch_Conversion_Complete(ch));
-			offset += ADC_ResultCh_GetWord_Signed(ch, 0x00);
-		}
-		return ((int8_t)(offset/4));
-	} else {
-		int8_t offset=0;
-
-		/* Do one conversion to find offset. */
-		ADC_Ch_Conversion_Start(ch);
-
-		do{
-		} while (!ADC_Ch_Conversion_Complete(ch));
-		offset = (uint8_t)ADC_ResultCh_GetWord_Signed(ch, 0x00);
-
-		return offset;
-	}
-}
-
 
 #ifdef __GNUC__
 

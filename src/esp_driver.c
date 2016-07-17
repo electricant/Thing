@@ -43,8 +43,8 @@ void transmitStr(char* data);
 void esp_init()
 {
 	// initialize serial port
-	PORTF.DIRSET = PIN3_bm; // PIN3 (TXD0) output
-	PORTF.DIRCLR = PIN2_bm; // PIN2 (RXD0) input
+	PORTD.DIRSET = PIN3_bm; // PIN3 (TXD0) output
+	PORTD.DIRCLR = PIN2_bm; // PIN2 (RXD0) input
 	USART_Format_Set(&ESP_USART, USART_CHSIZE_8BIT_gc, USART_PMODE_DISABLED_gc,
 		false);
 	USART_Baudrate_Set(&ESP_USART, 11, -7); // 115200 baud (see the XMEGA manual)

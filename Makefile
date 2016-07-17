@@ -1,6 +1,6 @@
 # Makefile for Thing, the robotic hand controller
 
-MCU           := atxmega128a1
+MCU           := atxmega128d4
 COMPILE_FLAGS := -Os -std=c99 -Wall -ffunction-sections -fdata-sections
 LINK_FLAGS    := -flto -fwhole-program -Wl,-gc-sections
 INCLUDES      := include/adc_driver.h include/avr_compiler.h include/board.h include/esp_driver.h include/pmic_driver.h include/serio_driver.h include/servo_driver.h include/TC_driver.h include/usart_driver.h include/utils.h
@@ -20,7 +20,8 @@ firmware.hex: $(OBJECTS)
 	@avr-size -C --mcu=$(MCU) firmware.elf
 
 flash: firmware.hex
-	avrdude -p x128a1 -c avrispmkII -P usb -U flash:w:firmware.hex:i
+	avrdude -p x128d4 -c avrispmkII -e
+	avrdude -p x128d4 -c avrispmkII -P usb -U flash:w:firmware.hex:i
 
 testwifi: tests/testwifi.c include/board.h
 	@echo Compiling $<
