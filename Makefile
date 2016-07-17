@@ -3,8 +3,8 @@
 MCU           := atxmega128d4
 COMPILE_FLAGS := -Os -std=c99 -Wall -ffunction-sections -fdata-sections
 LINK_FLAGS    := -flto -fwhole-program -Wl,-gc-sections
-INCLUDES      := include/adc_driver.h include/avr_compiler.h include/board.h include/esp_driver.h include/pmic_driver.h include/serio_driver.h include/servo_driver.h include/TC_driver.h include/usart_driver.h include/utils.h
-OBJECTS       := main.o esp_driver.o servo_driver.o serio_driver.o TC_driver.o pmic_driver.o adc_driver.o usart_driver.o
+INCLUDES      := include/adc_driver.h include/avr_compiler.h include/board.h include/esp_driver.h include/pmic_driver.h include/serio_driver.h include/servo_driver.h include/TC_driver.h include/usart_driver.h include/utils.h include/battery_driver.h
+OBJECTS       := main.o esp_driver.o servo_driver.o serio_driver.o TC_driver.o pmic_driver.o adc_driver.o usart_driver.o battery_driver.o
 
 all: firmware.hex tests
 

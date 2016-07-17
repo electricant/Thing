@@ -6,7 +6,7 @@
  * and it has been adapted to suit this application
  *
  * Copyright (C) 2008 Atmel Corporation <avr@atmel.com>
- * Copyright (C) 2015 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
+ * Copyright (C) 2016 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
  */
 #include "include/adc_driver.h"
 #include "include/utils.h"

@@ -3,19 +3,15 @@
  *
  * Copyright (C) 2015 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
  */
-
-// Standard library
-
-// Local drivers
-#include "include/adc_driver.h"
 #include "include/board.h"
 #include "include/avr_compiler.h"
 #include "include/pmic_driver.h"
-#include "include/adc_driver.h"
 
+#include "include/adc_driver.h"
 #include "include/esp_driver.h"
 #include "include/serio_driver.h"
 #include "include/servo_driver.h"
+#include "include/battery_driver.h"
 
 /**
  * Firmware entry point
@@ -24,17 +20,15 @@ int main( void )
 {
 	/*
 	 * HARDWARE INITIALIZATION
-	 *
-	 * All the shared modules are initialized here. The rest is done within each
-	 * driver.
 	 */
 	//TODO: clock_init();
 	ADC_init();
 	servo_init();
+	battery_init();
 	serio_init();
 	esp_init();
 
-	// Interrupts are used pretty much everywhere
+	// Interrupts are used pretty much everywhere so they are initialized here
 	PMIC_SetVectorLocationToApplication();
 	PMIC_EnableLowLevel();
 	PMIC_EnableMediumLevel();
@@ -45,26 +39,6 @@ int main( void )
 	/*
 	 * main loop: listens for comands and executes them
 	 */
-	 PORTD.DIRSET = PIN4_bm | PIN5_bm | PIN6_bm;
-	 PORTD.OUT = 0x00;
-	 while (1) {
-			uint8_t volt = ADC_getBatteryVoltage();
-			if (volt >= 220) { // HIGH
-				PORTD.OUT = 0x70; // all LEDs on
-			} else if (volt >= 190) { // MED
-				PORTD.OUT = 0x30;
-			} else if (volt >= 161) { // LOW
-				PORTD.OUT = 0x10;
-			} else {
-				// STOP
-			}
-
-			if (PORTC.IN & 0x40) { // charging
-				PORTD.OUT = 0x00;
-				break;
-			}
-	 }
-
 	while (1) {
 		union wifiCommand cmd = esp_getCommand(true);
 

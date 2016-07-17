@@ -1,7 +1,7 @@
 /**
  *
  *
- * Copyright (C) 2015 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
+ * Copyright (C) 2016 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
  */
 #include "include/board.h"
 #include "include/avr_compiler.h"

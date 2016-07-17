@@ -1,7 +1,7 @@
 /**
  * Global configuration file for the board. All the compile-time options go here
  *
- * Copyright (C) 2015 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
+ * Copyright (C) 2016 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
  */
 
 #ifndef BOARD_H
