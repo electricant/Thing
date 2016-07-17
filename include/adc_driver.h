@@ -23,6 +23,10 @@
 #define ANGLE_GAIN ADC_CH_GAIN_1X_gc
 // gain used to measure the battery voltage
 #define BATTERY_GAIN ADC_CH_GAIN_1X_gc
+// offset on the current measurement (mA)
+#define CURRENT_OFFSET 1
+// offset on the angle measurement (degrees)
+#define ANGLE_OFFSET   32
 
 /* Macros */
 

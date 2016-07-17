@@ -85,12 +85,18 @@ ISR(ADCA_CH0_vect)
 
 inline uint8_t ADC_getServoCurrent(uint8_t servo_num)
 {
-	return 0;
+	uint16_t tempC = conv[servo_num * 2].result;
+	tempC = (tempC * 25) / 36; // 37
+	tempC = (tempC * 10) / 32; // 31
+	return (tempC - CURRENT_OFFSET);
 }
 
 inline uint8_t ADC_getServoAngle(uint8_t servo_num)
 {
-	return 0;
+	uint16_t tempA = conv[(servo_num * 2) + 1].result;
+	tempA = (tempA * 9) / 32;
+	tempA = (tempA * 5) / 16;
+	return tempA - ANGLE_OFFSET;
 }
 
 inline uint8_t ADC_getBatteryVoltage()

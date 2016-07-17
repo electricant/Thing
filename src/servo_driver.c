@@ -17,9 +17,7 @@ struct servo_data_t
 {
 	uint16_t controlPWM; // Value to send to the CC module, multiplied by
 	                     // SPEED_DIVIDER to get fractional speed
-	uint8_t  current_mA; // current measured by the ADC
 	uint8_t  maxCurrent_mA; // maximum allowed current
-	uint8_t  angle_deg; // angle measured by the ADC
 	uint8_t  targetAngle_deg; // angle to be reached
 	uint8_t  speed; // speed of angle rotation
 };
@@ -65,9 +63,9 @@ ISR(TCD0_CCA_vect)
 		uint16_t targetComp = angle2comp(sData[i].targetAngle_deg)
 			* SPEED_DIVIDER;
 		uint8_t speed = sData[i].speed;
-		uint8_t actualAngle = sData[i].angle_deg;
-		uint8_t actualCurrent = sData[i].current_mA;
 		uint8_t maxCurrent = sData[i].maxCurrent_mA;
+		uint8_t actualAngle = ADC_getServoAngle(i);
+		uint8_t actualCurrent = ADC_getServoCurrent(i);
 
 		switch (status)
 		{
@@ -136,50 +134,7 @@ ISR(TCD0_CCA_vect)
 		}
 	}
 }
-/*
-ISR(ADCA_CH0_vect)
-{
-	static int8_t servo_num = 0;
-	// use a temporary value for calculations to avoid wrong readings
-	int16_t tempC = ADC_ResultCh_GetWord_Signed(&ADCA.CH0, CURRENT_OFFSET);
-	// remove the sign, thus leaving 11 bits resolution
-	tempC = max(0, tempC);
-	// convert the reading int a current by multiplying by 1000/4096
-	tempC = (tempC * 25) / 32;
-	tempC = (tempC * 5) / 16;
-	// smooth the result and save it
-	tempC += sData[servo_num].current_mA;
-	sData[servo_num].current_mA = tempC / 2;
 
-	// select another servo
-	//servo_num = (servo_num + 1) % 5;
-
-	// start another conversion
-	// TODO: do I have to flush the ADC pipeline?
-	ADC_Ch_Conversion_Start(&ADCA.CH0);
-}
-
-ISR(ADCA_CH1_vect)
-{
-	static int8_t servo_num = 0;
-	// temporary value for angle readings (TODO: single ended)
-	uint16_t tempA = max(0, ADCA.CH1.RES);
-	// multiply by 180/2048 to obtain an angle
-	tempA = (tempA * 9) / 32;
-	tempA = (tempA * 5) / 16;
-	// subtract an offset due to the servo potentiometer
-	tempA -= ANGLE_OFFSET;
-	// smooth and save
-	tempA += sData[servo_num].angle_deg;
-	sData[servo_num].angle_deg = tempA / 2;
-
-	// select another servo
-	//servo_num = (servo_num + 1) % 5;
-
-	// start another conversion
-	ADC_Ch_Conversion_Start(&ADCA.CH1);
-}
-*/
 void servo_setMode(const servo_state_t mode)
 {
 	status = mode;
@@ -211,14 +166,9 @@ uint8_t servo_getAngle(const uint8_t servo_num)
 	return (actPWM * 9) / 25;
 }
 
-uint8_t servo_getCurrent(const uint8_t servo_num)
-{
-	return sData[servo_num].current_mA;
-}
-
 uint8_t servo_getSpeed(const uint8_t servo_num)
 {
-	uint8_t current = sData[servo_num].current_mA;
+	uint8_t current = ADC_getServoCurrent(servo_num);
 
 	if ((current > 10) && (current < sData[servo_num].maxCurrent_mA))
 		return sData[servo_num].speed;

@@ -41,11 +41,6 @@
 	// Default maximum current in mA
 	#define DEF_CURRENT_MA 50
 
-	// offset on the current measurement (mA)
-	#define CURRENT_OFFSET 6
-	// offset on the angle measurement (degrees)
-	#define ANGLE_OFFSET   32
-
 	/**
 	 * Initialize the hardware components needed for servo operation
 	 */

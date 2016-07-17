@@ -61,6 +61,7 @@ int main( void )
 
 			if (PORTC.IN & 0x40) { // charging
 				PORTD.OUT = 0x00;
+				break;
 			}
 	 }
 
