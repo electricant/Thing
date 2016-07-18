@@ -9776,8 +9776,6 @@ Source: &lt;a href="http://www.ftdichip.com/Support/Documents/DataSheets/ICs/DS_
 <part name="L5" library="pol" deviceset="L_TDK_LTF5022" device="" value="10uH"/>
 <part name="Q1" library="transistor-npn" deviceset="BC847*" device="SMD" technology="ALT1"/>
 <part name="SUPPLY11" library="supply2" deviceset="GND" device=""/>
-<part name="U$11" library="pol" deviceset="PMEG2010ET" device=""/>
-<part name="U$12" library="pol" deviceset="PMEG2010ET" device=""/>
 <part name="R11" library="rcl" deviceset="R-US_" device="M0805" value="10k"/>
 <part name="R12" library="rcl" deviceset="R-US_" device="M0805" value="10k"/>
 <part name="U$13" library="at90usb" deviceset="AT90USB162-*" device="AU"/>
@@ -9960,8 +9958,6 @@ Source: &lt;a href="http://www.ftdichip.com/Support/Documents/DataSheets/ICs/DS_
 <instance part="L5" gate="G$1" x="53.34" y="-38.1" rot="R180"/>
 <instance part="Q1" gate="G$1" x="-81.28" y="63.5"/>
 <instance part="SUPPLY11" gate="GND" x="-78.74" y="55.88"/>
-<instance part="U$11" gate="G$1" x="-104.14" y="58.42"/>
-<instance part="U$12" gate="G$1" x="-104.14" y="68.58"/>
 <instance part="R11" gate="G$1" x="-78.74" y="78.74" rot="R90"/>
 <instance part="R12" gate="G$1" x="-91.44" y="63.5" rot="R180"/>
 <instance part="U$13" gate="AT90USB162" x="-96.52" y="139.7"/>
@@ -10750,25 +10746,7 @@ Source: &lt;a href="http://www.ftdichip.com/Support/Documents/DataSheets/ICs/DS_
 <wire x1="-83.82" y1="63.5" x2="-86.36" y2="63.5" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$6" class="0">
-<segment>
-<pinref part="U$12" gate="G$1" pin="C"/>
-<wire x1="-101.6" y1="68.58" x2="-99.06" y2="68.58" width="0.1524" layer="91"/>
-<wire x1="-99.06" y1="68.58" x2="-99.06" y2="63.5" width="0.1524" layer="91"/>
-<pinref part="U$11" gate="G$1" pin="C"/>
-<wire x1="-99.06" y1="63.5" x2="-99.06" y2="58.42" width="0.1524" layer="91"/>
-<wire x1="-99.06" y1="58.42" x2="-101.6" y2="58.42" width="0.1524" layer="91"/>
-<pinref part="R12" gate="G$1" pin="2"/>
-<wire x1="-99.06" y1="63.5" x2="-96.52" y2="63.5" width="0.1524" layer="91"/>
-<junction x="-99.06" y="63.5"/>
-</segment>
-</net>
 <net name="V_USB_CHG" class="0">
-<segment>
-<pinref part="U$12" gate="G$1" pin="A"/>
-<wire x1="-106.68" y1="68.58" x2="-111.76" y2="68.58" width="0.1524" layer="91"/>
-<label x="-111.76" y="68.58" size="1.778" layer="95" rot="R180" xref="yes"/>
-</segment>
 <segment>
 <pinref part="C12" gate="G$1" pin="1"/>
 <wire x1="-220.98" y1="154.94" x2="-220.98" y2="160.02" width="0.1524" layer="91"/>
@@ -10825,14 +10803,14 @@ Source: &lt;a href="http://www.ftdichip.com/Support/Documents/DataSheets/ICs/DS_
 </net>
 <net name="BATT_LOW" class="0">
 <segment>
-<pinref part="U$11" gate="G$1" pin="A"/>
-<wire x1="-106.68" y1="58.42" x2="-111.76" y2="58.42" width="0.1524" layer="91"/>
-<label x="-111.76" y="58.42" size="1.778" layer="95" rot="R180" xref="yes"/>
-</segment>
-<segment>
 <pinref part="U2" gate="G$1" pin="PC7"/>
 <wire x1="-99.06" y1="-22.86" x2="-96.52" y2="-22.86" width="0.1524" layer="91"/>
 <label x="-96.52" y="-22.86" size="1.778" layer="95" xref="yes"/>
+</segment>
+<segment>
+<pinref part="R12" gate="G$1" pin="2"/>
+<wire x1="-96.52" y1="63.5" x2="-104.14" y2="63.5" width="0.1524" layer="91"/>
+<label x="-104.14" y="63.5" size="1.778" layer="95" rot="R180" xref="yes"/>
 </segment>
 </net>
 <net name="P_RES" class="0">
