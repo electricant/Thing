@@ -192,5 +192,5 @@ void esp_sendCommand(const union wifiCommand cmd)
 		txCmds.nQueued++;
 
 	// ready to send the data out
-	USART_DreInterruptLevel_Set(&ESP_USART, USART_DREINTLVL_LO_gc);
+	USART_DreInterruptLevel_Set(&ESP_USART, USART_DREINTLVL_HI_gc);
 }

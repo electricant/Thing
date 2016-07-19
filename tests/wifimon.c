@@ -105,6 +105,7 @@ int main(int argc, char *argv[])
 		printf("\tSpeed: %u\n", answer.field.data);
 
 		cmd.field.servo = (cmd.field.servo + 1) % 5;
+		sleep(1);
 	}
 
 	return 0;

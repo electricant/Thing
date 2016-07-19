@@ -10,6 +10,8 @@
  */
 #include "include/adc_driver.h"
 #include "include/utils.h"
+#include "include/serio_driver.h"
+
 /*
  * The ADC is continuously running. The various channels are scanned one at a
  * time. This data structure keeps track of the conversion.

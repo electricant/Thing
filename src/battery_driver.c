@@ -15,7 +15,7 @@ void battery_init()
 	PORTD.OUT = 0x00;
 
 	PORTC.DIRSET = PIN7_bm; // signal to stop the boost converters
-	PORTC.OUTSET = PIN7_bm; // start with the converters stopped to avoid power 
+	PORTC.OUTSET = PIN7_bm; // start with the converters stopped to avoid power
 	                        // surges on the battery. When the voltage recovers
 	                        // the converters will be enabled again
 	PORTC.DIRCLR = PIN6_bm; // input V_USB_CHG
@@ -44,7 +44,7 @@ ISR(TCE0_CCA_vect)
 	} else if (volt >= 161) { // LOW
 		PORTD.OUT = 0x10;
 		PORTC.OUTCLR = PIN7_bm;
-	} else { // STOP everything
+	} else {
 		PORTC.OUTSET = PIN7_bm; // stop the converters
 
 		if (PORTD.OUT == 0x00) // toggle battery LEDs

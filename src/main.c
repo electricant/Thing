@@ -5,7 +5,7 @@
  */
 #include "include/board.h"
 #include "include/avr_compiler.h"
-#include "include/pmic_driver.h"
+//#include "include/pmic_driver.h"
 #include "include/clksys_driver.h"
 
 #include "include/adc_driver.h"
@@ -34,11 +34,8 @@ int main( void )
 	serio_init();
 	esp_init();
 
-	// Interrupts are used pretty much everywhere so they are initialized here
-	PMIC_SetVectorLocationToApplication();
-	PMIC_EnableLowLevel();
-	PMIC_EnableMediumLevel();
-	PMIC_EnableHighLevel();
+	// Enable all interrupts
+	PMIC.CTRL = PMIC_HILVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm;
 	sei();
 
 	serio_putString("\r\nRA Thing v0.0 READY\r\n> "); // TODO make it a prompt

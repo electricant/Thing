@@ -9,6 +9,7 @@
 #include "include/adc_driver.h"
 
 #include "include/servo_driver.h"
+#include "include/serio_driver.h"
 #include "include/utils.h"
 
 static volatile servo_state_t status = FOLLOW; // start in a safe mode
@@ -25,8 +26,9 @@ static struct servo_data_t sData[5];
 
 void servo_init()
 {
-	// Setup the timer-counters for PWM operation
-	PORTD.DIR = 0x01;
+	PORTD.DIRSET = PIN0_bm;
+	PORTC.DIRSET = PIN5_bm | PIN4_bm | PIN1_bm | PIN0_bm;
+
 	TC_SetPeriod(&THUMB_TIMER, COMPARE_MAX);
 	TC0_ConfigClockSource(&THUMB_TIMER, CLK_DIV);
 	TC0_ConfigWGM(&THUMB_TIMER, TC_WGMODE_DS_T_gc);

@@ -25,7 +25,7 @@ void serio_init()
 	USART_Baudrate_Set(&SERIO_USART, 1047, -6); // 38400 baud (see the manual)
 	USART_Rx_Enable(&SERIO_USART);
 	USART_Tx_Enable(&SERIO_USART);
-	USART_RxdInterruptLevel_Set(&SERIO_USART, USART_RXCINTLVL_LO_gc);
+	USART_RxdInterruptLevel_Set(&SERIO_USART, USART_RXCINTLVL_HI_gc);
 
 	rxBuf.next = 0;
 	rxBuf.used = 0;
@@ -64,7 +64,7 @@ void serio_putChar(char c)
 	txBuf.used++;
 
 	// (re)enable interrupt in order to send data
-	USART_DreInterruptLevel_Set(&SERIO_USART, USART_DREINTLVL_LO_gc);
+	USART_DreInterruptLevel_Set(&SERIO_USART, USART_DREINTLVL_HI_gc);
 }
 
 void serio_putString(char* string)
