@@ -30,12 +30,12 @@
 	 * Configuration directives
 	 */
 	// Those afferct the PWM frequency and resolution. See the XMEGA manual
-	#define COMPARE_MAX    4999 // sets the servo frequency to 50Hz
-	#define CLK_DIV        TC_CLKSEL_DIV4_gc
+	#define COMPARE_MAX    19999 // sets the servo frequency to 50Hz
+	#define CLK_DIV        TC_CLKSEL_DIV8_gc
 	// Minimun output value for servo PWM
-	#define SERVO_PWM_MIN  125
+	#define SERVO_PWM_MIN  500
 	// Maximum output value for servo PWM
-	#define SERVO_PWM_MAX  625
+	#define SERVO_PWM_MAX  2500
 	// Divider for the speed, used to slow down servo motion
 	#define SPEED_DIVIDER  2
 	// Default maximum current in mA
@@ -82,4 +82,10 @@
 	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
 	 */
 	uint8_t servo_getSpeed(const uint8_t servo_num);
+	/**
+	 * Return the current angle for the chosen servomotor
+	 *
+	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
+	 */
+	uint8_t servo_getAngle(const uint8_t servo_num);
 #endif

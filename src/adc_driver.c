@@ -26,11 +26,12 @@ void ADC_init()
 	ADC_ConvMode_and_Resolution_Config(&ADCA, ADC_ConvMode_Signed,
 			ADC_RESOLUTION_12BIT_gc);
 	ADC_Reference_Config(&ADCA, ADC_REFSEL_INT1V_gc);
-	ADC_Prescaler_Config(&ADCA, ADC_PRESCALER_DIV256_gc); // TODO: f_samp = ?
+	ADC_Prescaler_Config(&ADCA, ADC_PRESCALER_DIV256_gc); // f_samp = 5682Hz
 
 	ADC_Ch_Interrupts_Config(&ADCA.CH0, ADC_CH_INTMODE_COMPLETE_gc,
 			ADC_CH_INTLVL_MED_gc);
 
+	ADC_waitSettle(&ADCA);
 	ADC_Enable(&ADCA);
 
 	// initialize the conversion struct

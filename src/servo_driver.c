@@ -27,11 +27,23 @@ void servo_init()
 {
 	// Setup the timer-counters for PWM operation
 	PORTD.DIR = 0x01;
-	TC_SetPeriod(&TCD0, COMPARE_MAX);
-	TC0_ConfigClockSource(&TCD0, CLK_DIV);
-	TC0_ConfigWGM(&TCD0, TC_WGMODE_DS_T_gc);
-	TC0_EnableCCChannels(&TCD0, TC0_CCAEN_bm);
-	TC0_SetCCAIntLevel(&TCD0, TC_CCAINTLVL_MED_gc);
+	TC_SetPeriod(&THUMB_TIMER, COMPARE_MAX);
+	TC0_ConfigClockSource(&THUMB_TIMER, CLK_DIV);
+	TC0_ConfigWGM(&THUMB_TIMER, TC_WGMODE_DS_T_gc);
+	TC0_EnableCCChannels(&THUMB_TIMER, TC0_CCAEN_bm);
+	TC0_SetCCAIntLevel(&THUMB_TIMER, TC_CCAINTLVL_MED_gc);
+
+	TC_SetPeriod(&INDEX_TIMER, COMPARE_MAX);
+	TC1_ConfigClockSource(&INDEX_TIMER, CLK_DIV);
+	TC1_ConfigWGM(&INDEX_TIMER, TC_WGMODE_DS_T_gc);
+	TC1_EnableCCChannels(&INDEX_TIMER, TC0_CCBEN_bm);
+	TC1_EnableCCChannels(&MIDDLE_TIMER, TC0_CCAEN_bm); // on the same timer
+
+	TC_SetPeriod(&RING_TIMER, COMPARE_MAX);
+	TC0_ConfigClockSource(&RING_TIMER, CLK_DIV);
+	TC0_ConfigWGM(&RING_TIMER, TC_WGMODE_DS_T_gc);
+	TC0_EnableCCChannels(&RING_TIMER, TC0_CCBEN_bm);
+	TC0_EnableCCChannels(&PINKY_TIMER, TC0_CCAEN_bm); // on the same timer
 
 	// provide some safe default values
 	for (int i = 0; i < 5; i++) {
@@ -46,7 +58,7 @@ void servo_init()
  */
 inline uint16_t angle2comp(uint8_t angle)
 {
-	return SERVO_PWM_MIN + (angle * 25) / 9; // (MAX-MIN) / 180
+	return SERVO_PWM_MIN + ((angle * 25) / 9) * 4; // (MAX-MIN) / 180
 }
 
 /**
@@ -163,7 +175,7 @@ uint8_t servo_getAngle(const uint8_t servo_num)
 {
 	uint16_t actPWM = sData[servo_num].controlPWM / SPEED_DIVIDER;
 	actPWM -= SERVO_PWM_MIN;
-	return (actPWM * 9) / 25;
+	return (actPWM * 9) / 100;
 }
 
 uint8_t servo_getSpeed(const uint8_t servo_num)

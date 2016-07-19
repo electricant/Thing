@@ -22,7 +22,7 @@ void serio_init()
 
 	USART_Format_Set(&SERIO_USART, USART_CHSIZE_8BIT_gc,
 		USART_PMODE_DISABLED_gc, false);
-	USART_Baudrate_Set(&SERIO_USART, 11, -7); // 115200 baud (see the XMEGA manual)
+	USART_Baudrate_Set(&SERIO_USART, 1047, -6); // 38400 baud (see the manual)
 	USART_Rx_Enable(&SERIO_USART);
 	USART_Tx_Enable(&SERIO_USART);
 	USART_RxdInterruptLevel_Set(&SERIO_USART, USART_RXCINTLVL_LO_gc);

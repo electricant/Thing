@@ -13,10 +13,8 @@
 	 * Clock configuration
 	 */
 	// CPU clock frequency. USed for timing and other stuff
-	#define F_CPU           2000000UL
-	// unset to use the external 16MHz crystal oscillator
-	#define USE_INTERNAL_CLOCK
-
+	#define F_CPU           16000000UL
+	
 	/**
 	 * Various hardware assignments
 	 */

@@ -5,7 +5,6 @@
  * Copyright (C) 2015 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
  */
 #include "include/esp_driver.h"
-#include "include/serio_driver.h" // for debug purposes
 
 // Struct holding the command queue. Declared as volatile in order not to be
 // optimized out by the compiler
@@ -47,7 +46,7 @@ void esp_init()
 	PORTD.DIRCLR = PIN2_bm; // PIN2 (RXD0) input
 	USART_Format_Set(&ESP_USART, USART_CHSIZE_8BIT_gc, USART_PMODE_DISABLED_gc,
 		false);
-	USART_Baudrate_Set(&ESP_USART, 11, -7); // 115200 baud (see the XMEGA manual)
+	USART_Baudrate_Set(&ESP_USART, 983, -7); // 115200 baud (see the XMEGA manual)
 	USART_Rx_Enable(&ESP_USART);
 	USART_Tx_Enable(&ESP_USART);
 
@@ -90,7 +89,6 @@ ISR(ESP_USART_RXC_vect)
 				                // so skip to the number of bits n
 			} else if (in == '>') {
 				canSend = true;
-				serio_putString("send\r\n");
 			}
 			break;
 

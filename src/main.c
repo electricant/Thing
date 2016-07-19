@@ -6,6 +6,7 @@
 #include "include/board.h"
 #include "include/avr_compiler.h"
 #include "include/pmic_driver.h"
+#include "include/clksys_driver.h"
 
 #include "include/adc_driver.h"
 #include "include/esp_driver.h"
@@ -21,7 +22,12 @@ int main( void )
 	/*
 	 * HARDWARE INITIALIZATION
 	 */
-	//TODO: clock_init();
+	CLKSYS_XOSC_Config(OSC_FRQRANGE_12TO16_gc, false,
+			OSC_XOSCSEL_XTAL_256CLK_gc);
+	CLKSYS_Enable(OSC_XOSCEN_bm);
+	do {} while ( CLKSYS_IsReady(OSC_XOSCRDY_bm) == 0);
+	CLKSYS_Main_ClockSource_Select(CLK_SCLKSEL_XOSC_gc);
+
 	ADC_init();
 	servo_init();
 	battery_init();
@@ -76,7 +82,7 @@ int main( void )
 				break;
 
 			case WIFI_GET_ANGLE: // command is the same, with payload
-				cmd.field.data = ADC_getServoAngle(cmd.field.servo);
+				cmd.field.data = servo_getAngle(cmd.field.servo);
 				esp_sendCommand(cmd);
 				break;
 

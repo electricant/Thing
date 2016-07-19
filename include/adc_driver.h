@@ -294,7 +294,7 @@
 struct ADC_Conversion_t {
 	uint8_t gain : 4;
 	uint8_t muxposPin;
-	int16_t result : 12;
+	uint16_t result : 12;
 };
 
 /* Prototypes for functions. */
