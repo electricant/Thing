@@ -18,13 +18,13 @@
 // settling time in clock cycles for the ADC
 #define COMMON_MODE_CYCLES 16
 // gain used to meaure currents
-#define CURRENT_GAIN ADC_CH_GAIN_4X_gc
+#define CURRENT_GAIN ADC_CH_GAIN_2X_gc
 // gain used to measure angles
 #define ANGLE_GAIN ADC_CH_GAIN_1X_gc
 // gain used to measure the battery voltage
 #define BATTERY_GAIN ADC_CH_GAIN_1X_gc
 // offset on the current measurement (mA)
-#define CURRENT_OFFSET 1
+#define CURRENT_OFFSET 0
 // offset on the angle measurement (degrees)
 #define ANGLE_OFFSET   32
 
@@ -292,9 +292,9 @@
 /* Data structures */
 
 struct ADC_Conversion_t {
-	uint8_t gain : 4;
+	uint8_t gain;
 	uint8_t muxposPin;
-	uint16_t result : 12;
+	int16_t result;
 };
 
 /* Prototypes for functions. */
