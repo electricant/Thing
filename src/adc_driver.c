@@ -24,7 +24,6 @@ static volatile uint8_t convIndex = 0;
 
 void ADC_init()
 {
-	ADC_loadCalibrationValues(&ADCA);
 	ADC_ConvMode_and_Resolution_Config(&ADCA, ADC_ConvMode_Signed,
 			ADC_RESOLUTION_12BIT_gc);
 	ADC_Reference_Config(&ADCA, ADC_REFSEL_INT1V_gc);
@@ -35,7 +34,6 @@ void ADC_init()
 
 	ADC_Enable(&ADCA);
 	ADC_waitSettle(&ADCA);
-
 
 	// initialize the conversion struct
 	conv[THUMB_FINGER].muxposPin = THUMB_CURRENT_PIN;
@@ -67,10 +65,9 @@ void ADC_init()
 	conv[10].gain = BATTERY_GAIN;
 	conv[10].muxposPin = ADC_CH_MUXPOS_PIN2_gc;
 
-	// start with the first channel
 	ADC_Ch_InputMode_and_Gain_Config(&ADCA.CH0, ADC_CH_INPUTMODE_DIFFWGAIN_gc,
-			conv[0].gain);
-	ADC_Ch_InputMux_Config(&ADCA.CH0, conv[0].muxposPin, ADC_NEG_PIN);
+			CURRENT_GAIN);
+	ADC_Ch_InputMux_Config(&ADCA.CH0, INDEX_CURRENT_PIN, ADC_NEG_PIN);
 	ADC_Ch_Conversion_Start(&ADCA.CH0);
 }
 
@@ -96,6 +93,7 @@ inline uint8_t ADC_getServoCurrent(uint8_t servo_num)
 {
 	uint16_t tempC = conv[servo_num * 2].result;
 	//tempC = (tempC * 3125) / 3072; // same as 1 (1% rounding error)
+	tempC = min(255, tempC);
 	return (tempC - CURRENT_OFFSET);
 }
 

@@ -79,7 +79,7 @@ int main( void )
 				break;
 
 			case WIFI_GET_ANGLE: // command is the same, with payload
-				cmd.field.data = servo_getAngle(cmd.field.servo);
+				cmd.field.data = ADC_getServoAngle(cmd.field.servo);
 				esp_sendCommand(cmd);
 				break;
 
