@@ -3,7 +3,7 @@
  *
  * This program sends commands through the wifi link in order to move the
  * servos. See its command line options for usage.
- * 
+ *
  * Copyright (C) 2015 Paolo Scaramuzza <paolo.scaramuzza@ipol.gq>
  */
 #include <stdio.h>
@@ -37,7 +37,7 @@ void parseCmdLine(int argc, char *argv[],int* m_ptr, int*n_ptr, int* a_ptr,
 	int opt;
 	while ((opt = getopt(argc, argv, "ha:c:m:n:s:")) != -1) {
 		const char* errstr;
-		switch (opt) 
+		switch (opt)
 		{
 			case 'a':
 				*a_ptr = strtonum(optarg, 0, 180, &errstr);
@@ -49,7 +49,7 @@ void parseCmdLine(int argc, char *argv[],int* m_ptr, int*n_ptr, int* a_ptr,
 				break;
 			case 'c':
 				*c_ptr = strtonum(optarg, 0, 255, &errstr);
-				if (errstr != NULL) { 
+				if (errstr != NULL) {
 					fprintf(stderr, "Could not parse the current. Reason: %s\n",
 						  errstr);
 					exit(EXIT_FAILURE);
@@ -66,7 +66,7 @@ void parseCmdLine(int argc, char *argv[],int* m_ptr, int*n_ptr, int* a_ptr,
 					*m_ptr = WIFI_MODE_ANGLE;
 				else if (*optarg == 'H')
 					*m_ptr = WIFI_MODE_HOLD;
-				else { 
+				else {
 					fprintf(stderr, "Invalid mode: %s. Expected F, A or H\n",
 						optarg);
 					exit(EXIT_FAILURE);
@@ -74,7 +74,7 @@ void parseCmdLine(int argc, char *argv[],int* m_ptr, int*n_ptr, int* a_ptr,
 				break;
 			case 'n':
 				*n_ptr = strtonum(optarg, 0, 5, &errstr);
-				if (errstr != NULL) { 
+				if (errstr != NULL) {
 					fprintf(stderr, "Could not parse the servo number."
 					" Reason: %s\n", errstr);
 					exit(EXIT_FAILURE);
@@ -82,7 +82,7 @@ void parseCmdLine(int argc, char *argv[],int* m_ptr, int*n_ptr, int* a_ptr,
 				break;
 			case 's':
 				*s_ptr = strtonum(optarg, 0, 255, &errstr);
-				if (errstr != NULL) { 
+				if (errstr != NULL) {
 					fprintf(stderr, "Could not parse the speed. Reason: %s\n",
 						  errstr);
 					exit(EXIT_FAILURE);
@@ -124,63 +124,71 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Could not create socket.\n");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	struct sockaddr_in board;
 	board.sin_addr.s_addr = inet_addr(BOARD_IP);
 	board.sin_family = AF_INET;
 	board.sin_port = htons(BOARD_PORT);
-	
+
 	if (connect(socket_desc, (struct sockaddr *)&board , sizeof(board)) < 0)
 	{
 		fprintf(stderr, "Error connecting to target board\n");
 		exit(EXIT_FAILURE);
 	}
-	
-	// wait some time after succesful connection
-	struct timespec delay, rem;
-	delay.tv_sec = 0;
-	delay.tv_nsec = 20*1000*1000; // 15 ms
-	nanosleep(&delay, &rem);
+	struct timeval tv;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	setsockopt(socket_desc, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,
+			sizeof(struct timeval));
 
 	union wifiCommand_le cmd;
+	union wifiCommand answer;
 
 	if (mode != -1) { // change mode first
 		cmd.field.command = WIFI_SET_MODE;
 		cmd.field.data = mode;
-		send(socket_desc , &cmd, sizeof(cmd), 0);
-		nanosleep(&delay, &rem);
+		int retval = -1;
+		while (retval < 0) {
+			send(socket_desc , &cmd, sizeof(cmd), 0);
+			retval = read(socket_desc, &answer, sizeof(answer));
+		}
 	}
 
 	if (angle != -1) {
 		cmd.field.command = WIFI_SET_ANGLE;
 		cmd.field.servo = servo_number;
 		cmd.field.data = angle;
-		send(socket_desc , &cmd, sizeof(cmd), 0);
-		nanosleep(&delay, &rem);
+
+		int retval = -1;
+		while (retval < 0) {
+			send(socket_desc , &cmd, sizeof(cmd), 0);
+			retval = read(socket_desc, &answer, sizeof(answer));
+		}
 	}
 
     if (current != -1) {
         cmd.field.command = WIFI_SET_CURRENT;
         cmd.field.servo = servo_number;
         cmd.field.data = current;
-        send(socket_desc , &cmd, sizeof(cmd), 0);
-    	nanosleep(&delay, &rem);
+
+        int retval = -1;
+		while (retval < 0) {
+			send(socket_desc , &cmd, sizeof(cmd), 0);
+			retval = read(socket_desc, &answer, sizeof(answer));
+		}
     }
 
     if (speed != -1) {
         cmd.field.command = WIFI_SET_SPEED;
         cmd.field.servo = servo_number;
         cmd.field.data = speed;
-        send(socket_desc , &cmd, sizeof(cmd), 0);
-        nanosleep(&delay, &rem);
+
+        int retval = -1;
+		while (retval < 0) {
+			send(socket_desc , &cmd, sizeof(cmd), 0);
+			retval = read(socket_desc, &answer, sizeof(answer));
+		}
     }
 
-	// wait for the remote end to close the socket
-	int len = 1;
-	while (len > 0) {
-		char buffer;
-		len = read(socket_desc, &buffer, len);
-	}
-	printf("Connection closed\n");
 	return 0;
 }
