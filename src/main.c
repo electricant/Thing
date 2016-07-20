@@ -58,15 +58,16 @@ int main( void )
 		switch (cmd.field.command)
 		{
 			case WIFI_SET_MODE:
-				if (cmd.field.data == WIFI_MODE_FOLLOW)
+				if (cmd.field.data == WIFI_MODE_FOLLOW) {
 					servo_setMode(FOLLOW);
 					esp_sendCommand(cmd);
-				else if (cmd.field.data == WIFI_MODE_ANGLE)
+				} else if (cmd.field.data == WIFI_MODE_ANGLE) {
 					servo_setMode(ANGLE);
 					esp_sendCommand(cmd);
-				else if (cmd.field.data == WIFI_MODE_HOLD)
+				} else if (cmd.field.data == WIFI_MODE_HOLD) {
 					servo_setMode(HOLD);
 					esp_sendCommand(cmd);
+				}
 				break;
 
 			case WIFI_SET_ANGLE:
