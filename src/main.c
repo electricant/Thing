@@ -60,22 +60,28 @@ int main( void )
 			case WIFI_SET_MODE:
 				if (cmd.field.data == WIFI_MODE_FOLLOW)
 					servo_setMode(FOLLOW);
+					esp_sendCommand(cmd);
 				else if (cmd.field.data == WIFI_MODE_ANGLE)
 					servo_setMode(ANGLE);
+					esp_sendCommand(cmd);
 				else if (cmd.field.data == WIFI_MODE_HOLD)
 					servo_setMode(HOLD);
+					esp_sendCommand(cmd);
 				break;
 
 			case WIFI_SET_ANGLE:
 				servo_setAngle(cmd.field.servo, cmd.field.data);
+				esp_sendCommand(cmd);
 				break;
 
 			case WIFI_SET_CURRENT:
 				servo_setCurrent(cmd.field.servo, cmd.field.data);
+				esp_sendCommand(cmd);
 				break;
 
 			case WIFI_SET_SPEED:
 				servo_setSpeed(cmd.field.servo, cmd.field.data);
+				esp_sendCommand(cmd);
 				break;
 
 			case WIFI_GET_ANGLE: // command is the same, with payload
