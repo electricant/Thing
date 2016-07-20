@@ -16,6 +16,7 @@ static volatile servo_state_t status = FOLLOW; // start in a safe mode
 
 struct servo_data_t
 {
+	servo_state_t status;
 	uint16_t controlPWM; // Value to send to the CC module, multiplied by
 	                     // SPEED_DIVIDER to get fractional speed
 	uint8_t  maxCurrent_mA; // maximum allowed current
@@ -49,6 +50,7 @@ void servo_init()
 
 	// provide some safe default values
 	for (int i = 0; i < 5; i++) {
+		sData[i].status = FOLLOW;
 		sData[i].controlPWM = SERVO_PWM_MIN * SPEED_DIVIDER;
 		sData[i].targetAngle_deg = 0;
 		sData[i].maxCurrent_mA = DEF_CURRENT_MA;
@@ -81,7 +83,7 @@ ISR(TCD0_CCA_vect)
 		uint8_t actualAngle = ADC_getServoAngle(i);
 		uint8_t actualCurrent = ADC_getServoCurrent(i);
 
-		switch (status)
+		switch (sData[i].status)
 		{
 			case ANGLE:
 				if (actualCurrent < maxCurrent) {
@@ -151,7 +153,17 @@ ISR(TCD0_CCA_vect)
 
 void servo_setMode(const servo_state_t mode)
 {
-	status = mode;
+	if (status != FOLLOW) {
+		status = mode;
+
+		for (int i = 0; i < 5; i++) {
+			sData[i].status = mode;
+		}
+	} else {
+		status = mode;
+		// avoid power surges by setting the status immediately.
+		// wait for position / current / speed updates instead
+	}
 }
 
 void servo_setAngle(const uint8_t servo_num, const uint8_t angle)
@@ -161,16 +173,19 @@ void servo_setAngle(const uint8_t servo_num, const uint8_t angle)
 	a = min(a, 180);
 
 	sData[servo_num].targetAngle_deg = a;
+	sData[servo_num].status = status;
 }
 
 void servo_setCurrent(const uint8_t servo_num, const uint8_t current_mA)
 {
 	sData[servo_num].maxCurrent_mA = current_mA;
+	sData[servo_num].status = status;
 }
 
 void servo_setSpeed(const uint8_t servo_num, const uint8_t speed)
 {
 	sData[servo_num].speed = speed;
+	sData[servo_num].status = status;
 }
 
 uint8_t servo_getAngle(const uint8_t servo_num)
