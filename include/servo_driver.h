@@ -39,7 +39,7 @@
 	// Divider for the speed, used to slow down servo motion
 	#define SPEED_DIVIDER  2
 	// Default maximum current in mA
-	#define DEF_CURRENT_MA 50
+	#define DEF_CURRENT_MA 250
 
 	/**
 	 * Initialize the hardware components needed for servo operation
