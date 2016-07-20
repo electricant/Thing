@@ -24,6 +24,7 @@ static volatile uint8_t convIndex = 0;
 
 void ADC_init()
 {
+	ADC_loadCalibrationValues(&ADCA);
 	ADC_ConvMode_and_Resolution_Config(&ADCA, ADC_ConvMode_Signed,
 			ADC_RESOLUTION_12BIT_gc);
 	ADC_Reference_Config(&ADCA, ADC_REFSEL_INT1V_gc);
@@ -66,8 +67,8 @@ void ADC_init()
 	conv[10].muxposPin = ADC_CH_MUXPOS_PIN2_gc;
 
 	ADC_Ch_InputMode_and_Gain_Config(&ADCA.CH0, ADC_CH_INPUTMODE_DIFFWGAIN_gc,
-			CURRENT_GAIN);
-	ADC_Ch_InputMux_Config(&ADCA.CH0, INDEX_CURRENT_PIN, ADC_NEG_PIN);
+		conv[0].gain);
+	ADC_Ch_InputMux_Config(&ADCA.CH0, conv[0].muxposPin, ADC_NEG_PIN);
 	ADC_Ch_Conversion_Start(&ADCA.CH0);
 }
 
