@@ -168,6 +168,9 @@ void servo_setMode(const servo_state_t mode)
 
 void servo_setAngle(const uint8_t servo_num, const uint8_t angle)
 {
+	if (servo_num > 4)
+		return;
+
 	uint8_t a = max(angle, 1); // setting angle to 0 may screw the control
 	                           // algorithm
 	a = min(a, 180);
@@ -178,12 +181,18 @@ void servo_setAngle(const uint8_t servo_num, const uint8_t angle)
 
 void servo_setCurrent(const uint8_t servo_num, const uint8_t current_mA)
 {
+	if (servo_num > 4)
+		return;
+
 	sData[servo_num].maxCurrent_mA = current_mA;
 	sData[servo_num].status = status;
 }
 
 void servo_setSpeed(const uint8_t servo_num, const uint8_t speed)
 {
+	if (servo_num > 4)
+		return;
+
 	sData[servo_num].speed = speed;
 	sData[servo_num].status = status;
 }

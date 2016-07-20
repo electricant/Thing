@@ -55,15 +55,13 @@
 	 * Set some angle to the desired servo.
 	 * Angle must be between 0 and 180. Values outside such range will be
 	 * cropped.
-	 *
-	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
+	 * This function fails silently if servo_num is not valid
 	 */
 	void servo_setAngle(const uint8_t servo_num, const uint8_t angle);
 
 	/**
 	 * Set the servo current in milliamperes.
-	 *
-	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
+	 * This function fails silently if servo_num is not valid
 	 */
 	void servo_setCurrent(const uint8_t servo_num, const uint8_t current_mA);
 
@@ -71,8 +69,7 @@
 	 * Set the speed at which te servo rotates when in ANGLE mode. This speed is
 	 * a value which will be summed to the current angle until the goal is
 	 * reached.
-	 *
-	 * NOTE: Choosing an invalid servo number may result in erratic behaviour.
+	 * This function fails silently if servo_num is not valid
 	 */
 	void servo_setSpeed(const uint8_t servo_num, const uint8_t speed);
 
