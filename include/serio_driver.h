@@ -1,6 +1,7 @@
 #ifndef SERIO_DRIVER_H
 #define SERIO_DRIVER_H
 
+	#include <stdbool.h>
 
 	/**
 	 * Size of the transmitt an send buffer in bytes
@@ -26,4 +27,19 @@
 	 * Write len bytes read from buf to the serial port
 	 */
 	void serio_writeBuffer(uint8_t* buf, size_t len);
+
+	/**
+	 *
+	 */
+	bool serio_hasChar();
+
+	/**
+	 *
+	 */
+	char serio_getChar();
+
+	/**
+	 *
+	 */
+	char* serio_getLine();
 #endif
